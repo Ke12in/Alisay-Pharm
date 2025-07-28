@@ -1,0 +1,206 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  <title>Prescriptions - Alisay Medical Center</title>
+  <link href="https://cdn.jsdelivr.net/npm/bootstrap@5.3.2/dist/css/bootstrap.min.css" rel="stylesheet">
+  <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.4.0/css/all.min.css">
+  <style>
+    html, body { height: 100%; }
+    body { min-height: 100vh; height: 100%; background: linear-gradient(135deg, #e0eafc 0%, #cfdef3 100%); display: flex; flex-direction: column; }
+    .dashboard-container { display: flex; min-height: 100vh; }
+    .sidebar { min-width: 220px; max-width: 220px; background: #1a237e; color: #fff; display: flex; flex-direction: column; padding: 2rem 1rem 1rem 1rem; box-shadow: 2px 0 8px rgba(31,38,135,0.08); }
+    .sidebar .nav-link { color: #fff; font-weight: 500; margin-bottom: 1rem; border-radius: 0.5rem; transition: background 0.2s; }
+    .sidebar .nav-link.active, .sidebar .nav-link:hover { background: #3949ab; color: #fff; }
+    .sidebar .sidebar-logo { font-size: 1.5rem; font-weight: bold; margin-bottom: 2rem; text-align: center; letter-spacing: 1px; }
+    .main-content { flex: 1 1 auto; padding: 0; display: flex; flex-direction: column; min-width: 0; }
+    .topbar { background: #fff; box-shadow: 0 2px 8px rgba(31,38,135,0.06); padding: 1rem 2rem; display: flex; align-items: center; justify-content: flex-end; min-height: 64px; }
+    .topbar .profile { display: flex; align-items: center; gap: 0.75rem; cursor: pointer; }
+    .topbar .profile-img { width: 40px; height: 40px; border-radius: 50%; object-fit: cover; background: #e3e3e3; display: flex; align-items: center; justify-content: center; font-size: 1.5rem; color: #3949ab; }
+    .content-area { flex: 1 1 auto; padding: 2rem; background: transparent; min-height: 0; }
+    .sidebar-mobile-overlay { display: none; position: fixed; top: 0; left: 0; right: 0; bottom: 0; background: rgba(0,0,0,0.3); z-index: 1999; }
+    .sidebar-mobile-overlay.active { display: block; }
+    .sidebar-mobile { position: fixed; top: 0; left: 0; width: 220px; height: 100vh; background: #1a237e; color: #fff; display: flex; flex-direction: column; padding: 2rem 1rem 1rem 1rem; box-shadow: 2px 0 8px rgba(31,38,135,0.08); z-index: 2000; transition: transform 0.3s ease; transform: translateX(-100%); }
+    .sidebar-mobile.show { transform: translateX(0); }
+    .sidebar-toggle-btn { display: none; }
+    @media (max-width: 991.98px) { .dashboard-container { flex-direction: column; } .sidebar { display: none !important; } .sidebar-toggle-btn { display: inline-block !important; position: fixed; top: 16px; left: 16px; z-index: 2100; } .sidebar-mobile { display: flex; } .sidebar .nav { flex-direction: row; width: 100%; justify-content: space-around; } .sidebar .sidebar-logo { display: none; } }
+    @media (min-width: 992px) { .sidebar-mobile, .sidebar-mobile-overlay, .sidebar-toggle-btn { display: none !important; } }
+  </style>
+</head>
+<body>
+  <div class="dashboard-container">
+    <aside class="sidebar">
+      <div class="sidebar-logo">
+        <i class="fa-solid fa-hospital"></i> Alisay Patient
+      </div>
+      <nav class="nav flex-column">
+        <a class="nav-link" href="dashboard-patient.html"><i class="fa-solid fa-house me-2"></i>Dashboard</a>
+        <a class="nav-link" href="patient-appointments.html"><i class="fa-solid fa-calendar-check me-2"></i>Appointments</a>
+        <a class="nav-link active" href="patient-prescriptions.html"><i class="fa-solid fa-file-medical me-2"></i>Prescriptions</a>
+        <a class="nav-link" href="patient-complaints.html"><i class="fa-solid fa-comment-medical me-2"></i>Complaints</a>
+        <a class="nav-link" href="patient-profile.html"><i class="fa-solid fa-user me-2"></i>Profile</a>
+        <a class="nav-link text-danger" href="#" onclick="logout()"><i class="fa-solid fa-sign-out-alt me-2"></i>Logout</a>
+      </nav>
+    </aside>
+    <div class="sidebar-mobile" id="sidebarMobile">
+      <div class="sidebar-logo mb-4">
+        <i class="fa-solid fa-hospital"></i> Alisay Patient
+      </div>
+      <nav class="nav flex-column">
+        <a class="nav-link" href="dashboard-patient.html"><i class="fa-solid fa-house me-2"></i>Dashboard</a>
+        <a class="nav-link" href="patient-appointments.html"><i class="fa-solid fa-calendar-check me-2"></i>Appointments</a>
+        <a class="nav-link active" href="patient-prescriptions.html"><i class="fa-solid fa-file-medical me-2"></i>Prescriptions</a>
+        <a class="nav-link" href="patient-complaints.html"><i class="fa-solid fa-comment-medical me-2"></i>Complaints</a>
+        <a class="nav-link" href="patient-profile.html"><i class="fa-solid fa-user me-2"></i>Profile</a>
+        <a class="nav-link text-danger" href="#" onclick="logout()"><i class="fa-solid fa-sign-out-alt me-2"></i>Logout</a>
+      </nav>
+    </div>
+    <div class="sidebar-mobile-overlay" id="sidebarMobileOverlay"></div>
+    <button class="btn btn-primary sidebar-toggle-btn d-lg-none" id="sidebarToggleBtn" title="Open menu"><i class="fa-solid fa-bars"></i></button>
+    <div class="main-content">
+      <div class="topbar">
+        <div class="profile" id="patient-profile-link">
+          <div class="profile-img"><i class="fa-solid fa-user-injured"></i></div>
+          <span id="patient-name">Patient</span>
+        </div>
+      </div>
+      <div class="content-area">
+        <div class="card p-4 mb-4 fade-in" style="max-width: 800px; width: 100%; margin: 0 auto;">
+          <div class="d-flex justify-content-between align-items-center mb-3">
+            <h2 class="mb-0">Your Prescriptions</h2>
+          </div>
+          <div class="table-responsive">
+            <table class="table table-hover align-middle">
+              <thead class="table-light">
+                <tr>
+                  <th>Date</th>
+                  <th>Doctor</th>
+                  <th>Medicines</th>
+                  <th>Notes</th>
+                  <th></th>
+                </tr>
+              </thead>
+              <tbody id="prescriptions-table-body">
+                <tr><td colspan="5" class="text-center text-muted">Loading prescriptions...</td></tr>
+              </tbody>
+            </table>
+          </div>
+        </div>
+        <!-- Prescription Details Modal -->
+        <div class="modal fade" id="prescriptionModal" tabindex="-1" aria-labelledby="prescriptionModalLabel" aria-hidden="true">
+          <div class="modal-dialog">
+            <div class="modal-content" id="prescription-modal-content">
+              <div class="modal-header">
+                <h5 class="modal-title" id="prescriptionModalLabel">Prescription Details</h5>
+                <button type="button" class="btn-close" data-bs-dismiss="modal" aria-label="Close"></button>
+              </div>
+              <div class="modal-body" id="prescription-modal-body">
+                <!-- Details will be injected here -->
+              </div>
+              <div class="modal-footer">
+                <button type="button" class="btn btn-secondary" data-bs-dismiss="modal">Close</button>
+                <button type="button" class="btn btn-primary" id="print-prescription-btn">Download/Print</button>
+              </div>
+            </div>
+          </div>
+        </div>
+      </div>
+    </div>
+  </div>
+  <footer class="text-center py-3 bg-light mt-4 shadow-sm">
+    <p class="mb-0">&copy; 2025 Alisay Medical Center</p>
+  </footer>
+  <script src="https://cdn.jsdelivr.net/npm/bootstrap@5.3.2/dist/js/bootstrap.bundle.min.js"></script>
+  <script src="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.4.0/js/all.min.js"></script>
+  <script src="https://www.gstatic.com/firebasejs/9.22.2/firebase-app-compat.js"></script>
+  <script src="https://www.gstatic.com/firebasejs/9.22.2/firebase-auth-compat.js"></script>
+  <script src="https://www.gstatic.com/firebasejs/9.22.2/firebase-firestore-compat.js"></script>
+  <script src="assets/js/main.js"></script>
+  <script src="assets/js/auth.js"></script>
+  <script>
+    function logout() { firebase.auth().signOut().then(() => { window.location.href = 'login.html'; }); }
+    document.getElementById('patient-profile-link').onclick = function() { window.location.href = 'patient-profile.html'; };
+    const sidebarMobile = document.getElementById('sidebarMobile');
+    const sidebarMobileOverlay = document.getElementById('sidebarMobileOverlay');
+    const sidebarToggleBtn = document.getElementById('sidebarToggleBtn');
+    function toggleSidebarMobile() { if (sidebarMobile.classList.contains('show')) { sidebarMobile.classList.remove('show'); sidebarMobileOverlay.classList.remove('active'); } else { sidebarMobile.classList.add('show'); sidebarMobileOverlay.classList.add('active'); } }
+    sidebarToggleBtn.addEventListener('click', toggleSidebarMobile);
+    sidebarMobileOverlay.addEventListener('click', toggleSidebarMobile);
+    sidebarMobile.querySelectorAll('a.nav-link').forEach(link => { link.addEventListener('click', () => { sidebarMobile.classList.remove('show'); sidebarMobileOverlay.classList.remove('active'); }); });
+
+   // Load prescriptions from Firestore for the logged-in user
+   let currentUser = null;
+   firebase.auth().onAuthStateChanged(function(user) {
+     if (user) {
+       currentUser = user;
+       loadPrescriptions();
+     } else {
+       window.location.href = 'login.html';
+     }
+   });
+   function loadPrescriptions() {
+     const tbody = document.getElementById('prescriptions-table-body');
+     tbody.innerHTML = '<tr><td colspan="5" class="text-center text-muted">Loading prescriptions...</td></tr>';
+     firebase.firestore().collection('prescriptions')
+       .where('userId', '==', currentUser.uid)
+       .orderBy('date', 'desc')
+       .get()
+       .then(snapshot => {
+         if (snapshot.empty) {
+           tbody.innerHTML = '<tr><td colspan="5" class="text-center text-muted">No prescriptions found.</td></tr>';
+         } else {
+           tbody.innerHTML = '';
+           snapshot.forEach(doc => {
+             const data = doc.data();
+             const date = data.date ? (data.date.seconds ? new Date(data.date.toDate()) : new Date(data.date)) : '';
+             const dateStr = date ? date.toLocaleString() : '';
+             const doctor = data.doctor || '';
+             const medicines = Array.isArray(data.medicines) ? data.medicines.join(', ') : (data.medicines || '');
+             const notes = data.notes || '';
+             const id = doc.id;
+             tbody.innerHTML += `<tr>
+               <td>${dateStr}</td>
+               <td>${doctor}</td>
+               <td>${medicines}</td>
+               <td>${notes}</td>
+               <td><button class='btn btn-sm btn-outline-primary' onclick='viewPrescription("${id}")'>View</button></td>
+             </tr>`;
+             window._prescriptions = window._prescriptions || {};
+             window._prescriptions[id] = {date, dateStr, doctor, medicines, notes, ...data};
+           });
+         }
+       });
+   }
+
+   // View prescription modal logic
+   window.viewPrescription = function(id) {
+     const data = window._prescriptions[id];
+     if (!data) return;
+     const modalBody = document.getElementById('prescription-modal-body');
+     modalBody.innerHTML = `
+       <div id="printable-prescription">
+         <h5 class='mb-3'>Prescription</h5>
+         <div><strong>Date:</strong> ${data.dateStr}</div>
+         <div><strong>Doctor:</strong> ${data.doctor || ''}</div>
+         <div><strong>Medicines:</strong> ${data.medicines || ''}</div>
+         <div><strong>Notes:</strong> ${data.notes || ''}</div>
+       </div>
+     `;
+     var modal = new bootstrap.Modal(document.getElementById('prescriptionModal'));
+     modal.show();
+   }
+   document.getElementById('print-prescription-btn').onclick = function() {
+     const printContents = document.getElementById('printable-prescription').innerHTML;
+     const win = window.open('', '', 'height=600,width=400');
+     win.document.write('<html><head><title>Prescription</title>');
+     win.document.write('<link rel="stylesheet" href="https://cdn.jsdelivr.net/npm/bootstrap@5.3.2/dist/css/bootstrap.min.css">');
+     win.document.write('</head><body >');
+     win.document.write(printContents);
+     win.document.write('</body></html>');
+     win.document.close();
+     win.print();
+   };
+  </script>
+</body>
+</html> 

@@ -1,0 +1,25 @@
+[debug] [2025-07-14T23:47:54.410Z] ----------------------------------------------------------------------
+[debug] [2025-07-14T23:47:54.432Z] Command:       C:\Program Files\nodejs\node.exe C:\Users\ADMIN\AppData\Roaming\npm\node_modules\firebase-tools\lib\bin\firebase.js deploy --only hosting
+[debug] [2025-07-14T23:47:54.438Z] CLI Version:   14.10.1
+[debug] [2025-07-14T23:47:54.439Z] Platform:      win32
+[debug] [2025-07-14T23:47:54.441Z] Node Version:  v22.15.0
+[debug] [2025-07-14T23:47:54.444Z] Time:          Mon Jul 14 2025 23:47:54 GMT+0000 (Coordinated Universal Time)
+[debug] [2025-07-14T23:47:54.448Z] ----------------------------------------------------------------------
+[debug] 
+[debug] [2025-07-14T23:47:58.907Z] > command requires scopes: ["email","openid","https://www.googleapis.com/auth/cloudplatformprojects.readonly","https://www.googleapis.com/auth/firebase","https://www.googleapis.com/auth/cloud-platform"]
+[debug] [2025-07-14T23:47:58.913Z] > authorizing via signed-in user (eddieomegabaidoo@gmail.com)
+[debug] [2025-07-14T23:47:58.915Z] [iam] checking project pharmacy-ali for permissions ["firebase.projects.get","firebasehosting.sites.update"]
+[debug] [2025-07-14T23:47:58.942Z] Checked if tokens are valid: true, expires at: 1752538941836
+[debug] [2025-07-14T23:47:58.942Z] Checked if tokens are valid: true, expires at: 1752538941836
+[debug] [2025-07-14T23:47:58.972Z] >>> [apiv2][query] POST https://cloudresourcemanager.googleapis.com/v1/projects/pharmacy-ali:testIamPermissions [none]
+[debug] [2025-07-14T23:47:58.973Z] >>> [apiv2][(partial)header] POST https://cloudresourcemanager.googleapis.com/v1/projects/pharmacy-ali:testIamPermissions x-goog-quota-user=projects/pharmacy-ali
+[debug] [2025-07-14T23:47:58.978Z] >>> [apiv2][body] POST https://cloudresourcemanager.googleapis.com/v1/projects/pharmacy-ali:testIamPermissions {"permissions":["firebase.projects.get","firebasehosting.sites.update"]}
+[debug] [2025-07-14T23:48:00.914Z] <<< [apiv2][status] POST https://cloudresourcemanager.googleapis.com/v1/projects/pharmacy-ali:testIamPermissions 200
+[debug] [2025-07-14T23:48:00.915Z] <<< [apiv2][body] POST https://cloudresourcemanager.googleapis.com/v1/projects/pharmacy-ali:testIamPermissions {"permissions":["firebase.projects.get","firebasehosting.sites.update"]}
+[debug] [2025-07-14T23:48:00.917Z] Checked if tokens are valid: true, expires at: 1752538941836
+[debug] [2025-07-14T23:48:00.920Z] Checked if tokens are valid: true, expires at: 1752538941836
+[debug] [2025-07-14T23:48:00.923Z] >>> [apiv2][query] GET https://firebase.googleapis.com/v1beta1/projects/pharmacy-ali [none]
+[debug] [2025-07-14T23:48:30.932Z] *** [apiv2] error from fetch(https://firebase.googleapis.com/v1beta1/projects/pharmacy-ali, {"headers":{},"method":"GET","signal":{}}): AbortError: The user aborted a request.
+[debug] [2025-07-14T23:48:30.934Z] Timeout reached making request to https://firebase.googleapis.com/v1beta1/projects/pharmacy-ali (original: The user aborted a request.)
+[error] 
+[error] Error: Assertion failed: resolving hosting target of a site with no site name or target name. This should have caused an error earlier

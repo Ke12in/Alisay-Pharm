@@ -1,0 +1,485 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  <title>Appointments - Alisay Medical Center</title>
+  <link href="https://cdn.jsdelivr.net/npm/bootstrap@5.3.2/dist/css/bootstrap.min.css" rel="stylesheet">
+  <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.4.0/css/all.min.css">
+  <style>
+    html, body { height: 100%; }
+    body { min-height: 100vh; height: 100%; background: linear-gradient(135deg, #e0eafc 0%, #cfdef3 100%); display: flex; flex-direction: column; }
+    .dashboard-container { display: flex; min-height: 100vh; }
+    .sidebar { min-width: 220px; max-width: 220px; background: #1a237e; color: #fff; display: flex; flex-direction: column; padding: 2rem 1rem 1rem 1rem; box-shadow: 2px 0 8px rgba(31,38,135,0.08); }
+    .sidebar .nav-link { color: #fff; font-weight: 500; margin-bottom: 1rem; border-radius: 0.5rem; transition: background 0.2s; }
+    .sidebar .nav-link.active, .sidebar .nav-link:hover { background: #3949ab; color: #fff; }
+    .sidebar .sidebar-logo { font-size: 1.5rem; font-weight: bold; margin-bottom: 2rem; text-align: center; letter-spacing: 1px; }
+    .main-content { flex: 1 1 auto; padding: 0; display: flex; flex-direction: column; min-width: 0; }
+    .topbar { background: #fff; box-shadow: 0 2px 8px rgba(31,38,135,0.06); padding: 1rem 2rem; display: flex; align-items: center; justify-content: flex-end; min-height: 64px; }
+    .topbar .profile { display: flex; align-items: center; gap: 0.75rem; cursor: pointer; }
+    .topbar .profile-img { width: 40px; height: 40px; border-radius: 50%; object-fit: cover; background: #e3e3e3; display: flex; align-items: center; justify-content: center; font-size: 1.5rem; color: #3949ab; }
+    .content-area { flex: 1 1 auto; padding: 2rem; background: transparent; min-height: 0; }
+    .sidebar-mobile-overlay { display: none; position: fixed; top: 0; left: 0; right: 0; bottom: 0; background: rgba(0,0,0,0.3); z-index: 1999; }
+    .sidebar-mobile-overlay.active { display: block; }
+    .sidebar-mobile { position: fixed; top: 0; left: 0; width: 220px; height: 100vh; background: #1a237e; color: #fff; display: flex; flex-direction: column; padding: 2rem 1rem 1rem 1rem; box-shadow: 2px 0 8px rgba(31,38,135,0.08); z-index: 2000; transition: transform 0.3s ease; transform: translateX(-100%); }
+    .sidebar-mobile.show { transform: translateX(0); }
+    .sidebar-toggle-btn { display: none; }
+    @media (max-width: 991.98px) { .dashboard-container { flex-direction: column; } .sidebar { display: none !important; } .sidebar-toggle-btn { display: inline-block !important; position: fixed; top: 16px; left: 16px; z-index: 2100; } .sidebar-mobile { display: flex; } .sidebar .nav { flex-direction: row; width: 100%; justify-content: space-around; } .sidebar .sidebar-logo { display: none; } }
+    @media (min-width: 992px) { .sidebar-mobile, .sidebar-mobile-overlay, .sidebar-toggle-btn { display: none !important; } }
+  </style>
+</head>
+<body>
+  <div class="dashboard-container">
+    <aside class="sidebar">
+      <div class="sidebar-logo">
+        <i class="fa-solid fa-hospital"></i> Alisay Patient
+      </div>
+      <nav class="nav flex-column">
+        <a class="nav-link" href="dashboard-patient.html"><i class="fa-solid fa-house me-2"></i>Dashboard</a>
+        <a class="nav-link active" href="patient-appointments.html"><i class="fa-solid fa-calendar-check me-2"></i>Appointments</a>
+        <a class="nav-link" href="patient-prescriptions.html"><i class="fa-solid fa-file-medical me-2"></i>Prescriptions</a>
+        <a class="nav-link" href="patient-complaints.html"><i class="fa-solid fa-comment-medical me-2"></i>Complaints</a>
+        <a class="nav-link" href="patient-profile.html"><i class="fa-solid fa-user me-2"></i>Profile</a>
+        <a class="nav-link text-danger" href="#" onclick="logout()"><i class="fa-solid fa-sign-out-alt me-2"></i>Logout</a>
+      </nav>
+    </aside>
+    <div class="sidebar-mobile" id="sidebarMobile">
+      <div class="sidebar-logo mb-4">
+        <i class="fa-solid fa-hospital"></i> Alisay Patient
+      </div>
+      <nav class="nav flex-column">
+        <a class="nav-link" href="dashboard-patient.html"><i class="fa-solid fa-house me-2"></i>Dashboard</a>
+        <a class="nav-link active" href="patient-appointments.html"><i class="fa-solid fa-calendar-check me-2"></i>Appointments</a>
+        <a class="nav-link" href="patient-prescriptions.html"><i class="fa-solid fa-file-medical me-2"></i>Prescriptions</a>
+        <a class="nav-link" href="patient-complaints.html"><i class="fa-solid fa-comment-medical me-2"></i>Complaints</a>
+        <a class="nav-link" href="patient-profile.html"><i class="fa-solid fa-user me-2"></i>Profile</a>
+        <a class="nav-link text-danger" href="#" onclick="logout()"><i class="fa-solid fa-sign-out-alt me-2"></i>Logout</a>
+      </nav>
+    </div>
+    <div class="sidebar-mobile-overlay" id="sidebarMobileOverlay"></div>
+    <button class="btn btn-primary sidebar-toggle-btn d-lg-none" id="sidebarToggleBtn" title="Open menu"><i class="fa-solid fa-bars"></i></button>
+    <div class="main-content">
+      <div class="topbar">
+        <div class="profile" id="patient-profile-link">
+          <div class="profile-img"><i class="fa-solid fa-user-injured"></i></div>
+          <span id="patient-name">Patient</span>
+        </div>
+      </div>
+      <div class="content-area">
+        <div class="card p-4 mb-4 fade-in" style="max-width: 800px; width: 100%; margin: 0 auto;">
+          <div class="d-flex justify-content-between align-items-center mb-3">
+            <h2 class="mb-0">Your Appointments</h2>
+            <button class="btn btn-primary" id="bookAppointmentBtn"><i class="fa-solid fa-calendar-plus me-1"></i>Book Appointment</button>
+          </div>
+          <div class="table-responsive">
+            <table class="table table-hover align-middle">
+              <thead class="table-light">
+                <tr>
+                  <th>Date</th>
+                  <th>Doctor</th>
+                  <th>Service</th>
+                  <th>Status</th>
+                  <th>Notes</th>
+                  <th>Actions</th>
+                </tr>
+              </thead>
+              <tbody id="appointments-table-body">
+                <tr><td colspan="6" class="text-center text-muted">Loading appointments...</td></tr>
+              </tbody>
+            </table>
+          </div>
+        </div>
+      </div>
+      <!-- Book Appointment Modal -->
+      <div class="modal fade" id="bookAppointmentModal" tabindex="-1" aria-labelledby="bookAppointmentModalLabel" aria-hidden="true">
+        <div class="modal-dialog">
+          <div class="modal-content">
+            <form id="bookAppointmentForm">
+              <div class="modal-header bg-primary text-white">
+                <h5 class="modal-title" id="bookAppointmentModalLabel"><i class="fa-solid fa-calendar-plus me-2"></i>Book Appointment</h5>
+                <button type="button" class="btn-close btn-close-white" data-bs-dismiss="modal" aria-label="Close"></button>
+              </div>
+              <div class="modal-body">
+                <div class="mb-3">
+                  <label for="appointmentDate" class="form-label">Date & Time</label>
+                  <input type="datetime-local" class="form-control" id="appointmentDate" required min="">
+                </div>
+                <div class="mb-3">
+                  <label for="appointmentDoctor" class="form-label">Doctor</label>
+                  <select class="form-select" id="appointmentDoctor" required><option value="">Loading...</option></select>
+                </div>
+                <div class="mb-3">
+                  <label for="appointmentService" class="form-label">Service</label>
+                  <select class="form-select" id="appointmentService" required><option value="">Loading...</option></select>
+                </div>
+                <div class="mb-3">
+                  <label for="appointmentNotes" class="form-label">Reason / Notes</label>
+                  <textarea class="form-control" id="appointmentNotes" rows="2" maxlength="250" placeholder="Optional"></textarea>
+                </div>
+              </div>
+              <div class="modal-footer">
+                <button type="button" class="btn btn-secondary" data-bs-dismiss="modal">Cancel</button>
+                <button type="submit" class="btn btn-primary">Book</button>
+              </div>
+            </form>
+          </div>
+        </div>
+      </div>
+      <!-- Edit Appointment Modal -->
+      <div class="modal fade" id="editAppointmentModal" tabindex="-1" aria-labelledby="editAppointmentModalLabel" aria-hidden="true">
+        <div class="modal-dialog">
+          <div class="modal-content">
+            <form id="editAppointmentForm">
+              <div class="modal-header bg-primary text-white">
+                <h5 class="modal-title" id="editAppointmentModalLabel"><i class="fa-solid fa-pen-to-square me-2"></i>Edit Appointment</h5>
+                <button type="button" class="btn-close btn-close-white" data-bs-dismiss="modal" aria-label="Close"></button>
+              </div>
+              <div class="modal-body">
+                <input type="hidden" id="editAppointmentId">
+                <div class="mb-3">
+                  <label for="editAppointmentDate" class="form-label">Date & Time</label>
+                  <input type="datetime-local" class="form-control" id="editAppointmentDate" required min="">
+                </div>
+                <div class="mb-3">
+                  <label for="editAppointmentDoctor" class="form-label">Doctor</label>
+                  <select class="form-select" id="editAppointmentDoctor" required><option value="">Loading...</option></select>
+                </div>
+                <div class="mb-3">
+                  <label for="editAppointmentService" class="form-label">Service</label>
+                  <select class="form-select" id="editAppointmentService" required><option value="">Loading...</option></select>
+                </div>
+                <div class="mb-3">
+                  <label for="editAppointmentNotes" class="form-label">Reason / Notes</label>
+                  <textarea class="form-control" id="editAppointmentNotes" rows="2" maxlength="250" placeholder="Optional"></textarea>
+                </div>
+              </div>
+              <div class="modal-footer">
+                <button type="button" class="btn btn-secondary" data-bs-dismiss="modal">Cancel</button>
+                <button type="submit" class="btn btn-primary">Save Changes</button>
+              </div>
+            </form>
+          </div>
+        </div>
+      </div>
+      <!-- Cancel Confirmation Modal -->
+      <div class="modal fade" id="cancelAppointmentModal" tabindex="-1" aria-labelledby="cancelAppointmentModalLabel" aria-hidden="true">
+        <div class="modal-dialog">
+          <div class="modal-content">
+            <div class="modal-header bg-danger text-white">
+              <h5 class="modal-title" id="cancelAppointmentModalLabel"><i class="fa-solid fa-trash me-2"></i>Cancel Appointment</h5>
+              <button type="button" class="btn-close btn-close-white" data-bs-dismiss="modal" aria-label="Close"></button>
+            </div>
+            <div class="modal-body">
+              <p>Are you sure you want to cancel this appointment?</p>
+              <input type="hidden" id="cancelAppointmentId">
+            </div>
+            <div class="modal-footer">
+              <button type="button" class="btn btn-secondary" data-bs-dismiss="modal">No</button>
+              <button type="button" class="btn btn-danger" id="confirmCancelAppointment">Yes, Cancel</button>
+            </div>
+          </div>
+        </div>
+      </div>
+      <!-- Toasts -->
+      <div class="position-fixed bottom-0 end-0 p-3" style="z-index: 3000">
+        <div id="apptToast" class="toast align-items-center text-bg-success border-0" role="alert" aria-live="assertive" aria-atomic="true">
+          <div class="d-flex">
+            <div class="toast-body" id="apptToastMsg">Appointment booked successfully!</div>
+            <button type="button" class="btn-close btn-close-white me-2 m-auto" data-bs-dismiss="toast" aria-label="Close"></button>
+          </div>
+        </div>
+        <div id="apptErrorToast" class="toast align-items-center text-bg-danger border-0" role="alert" aria-live="assertive" aria-atomic="true">
+          <div class="d-flex">
+            <div class="toast-body" id="apptErrorToastMsg">Error booking appointment.</div>
+            <button type="button" class="btn-close btn-close-white me-2 m-auto" data-bs-dismiss="toast" aria-label="Close"></button>
+          </div>
+        </div>
+      </div>
+    </div>
+  </div>
+  <footer class="text-center py-3 bg-light mt-4 shadow-sm">
+    <p class="mb-0">&copy; 2025 Alisay Medical Center</p>
+  </footer>
+  <script src="https://cdn.jsdelivr.net/npm/bootstrap@5.3.2/dist/js/bootstrap.bundle.min.js"></script>
+  <script src="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.4.0/js/all.min.js"></script>
+  <script src="https://www.gstatic.com/firebasejs/9.22.2/firebase-app-compat.js"></script>
+  <script src="https://www.gstatic.com/firebasejs/9.22.2/firebase-auth-compat.js"></script>
+  <script src="https://www.gstatic.com/firebasejs/9.22.2/firebase-firestore-compat.js"></script>
+  <script src="assets/js/main.js"></script>
+  <script src="assets/js/auth.js"></script>
+  <script>
+    function logout() { firebase.auth().signOut().then(() => { window.location.href = 'login.html'; }); }
+    document.getElementById('patient-profile-link').onclick = function() { window.location.href = 'patient-profile.html'; };
+    const sidebarMobile = document.getElementById('sidebarMobile');
+    const sidebarMobileOverlay = document.getElementById('sidebarMobileOverlay');
+    const sidebarToggleBtn = document.getElementById('sidebarToggleBtn');
+    function toggleSidebarMobile() { if (sidebarMobile.classList.contains('show')) { sidebarMobile.classList.remove('show'); sidebarMobileOverlay.classList.remove('active'); } else { sidebarMobile.classList.add('show'); sidebarMobileOverlay.classList.add('active'); } }
+    sidebarToggleBtn.addEventListener('click', toggleSidebarMobile);
+    sidebarMobileOverlay.addEventListener('click', toggleSidebarMobile);
+    sidebarMobile.querySelectorAll('a.nav-link').forEach(link => { link.addEventListener('click', () => { sidebarMobile.classList.remove('show'); sidebarMobileOverlay.classList.remove('active'); }); });
+
+   // Load appointments from Firestore for the logged-in user
+   let currentUser = null;
+   firebase.auth().onAuthStateChanged(function(user) {
+     if (user) {
+       currentUser = user;
+       loadAppointments();
+     } else {
+       window.location.href = 'login.html';
+     }
+   });
+   function loadAppointments() {
+     const tbody = document.getElementById('appointments-table-body');
+     tbody.innerHTML = '<tr><td colspan="6" class="text-center text-muted">Loading appointments...</td></tr>';
+     firebase.firestore().collection('appointments')
+       .where('userId', '==', currentUser.uid)
+       .orderBy('date', 'desc')
+       .get()
+       .then(snapshot => {
+         if (snapshot.empty) {
+           tbody.innerHTML = '<tr><td colspan="6" class="text-center text-muted">No appointments found.</td></tr>';
+         } else {
+           tbody.innerHTML = '';
+           snapshot.forEach(doc => {
+             const data = doc.data();
+             const date = data.date ? (data.date.seconds ? new Date(data.date.toDate()) : new Date(data.date)) : '';
+             const dateStr = date ? date.toLocaleString() : '';
+             const doctor = data.doctor || '';
+             const service = data.service || '';
+             const status = data.status || '';
+             const notes = data.notes || '';
+             const isFuture = date && new Date(date) > new Date();
+             const canEdit = status === 'pending' && isFuture;
+             tbody.innerHTML += `<tr>
+               <td>${dateStr}</td>
+               <td>${doctor}</td>
+               <td>${service}</td>
+               <td>${status}</td>
+               <td>${notes}</td>
+               <td>
+                 ${canEdit ? `<button class='btn btn-sm btn-outline-primary me-1 edit-appt-btn' data-id='${doc.id}'><i class='fa-solid fa-pen-to-square'></i></button>` : ''}
+                 ${canEdit ? `<button class='btn btn-sm btn-outline-danger cancel-appt-btn' data-id='${doc.id}'><i class='fa-solid fa-trash'></i></button>` : ''}
+               </td>
+             </tr>`;
+           });
+           // Attach event listeners
+           document.querySelectorAll('.edit-appt-btn').forEach(btn => {
+             btn.addEventListener('click', onEditAppointment);
+           });
+           document.querySelectorAll('.cancel-appt-btn').forEach(btn => {
+             btn.addEventListener('click', onCancelAppointment);
+           });
+         }
+       });
+   }
+    // --- Book Appointment Logic ---
+    const bookBtn = document.getElementById('bookAppointmentBtn');
+    const bookModal = new bootstrap.Modal(document.getElementById('bookAppointmentModal'));
+    const bookForm = document.getElementById('bookAppointmentForm');
+    const doctorSelect = document.getElementById('appointmentDoctor');
+    const serviceSelect = document.getElementById('appointmentService');
+    const dateInput = document.getElementById('appointmentDate');
+    const notesInput = document.getElementById('appointmentNotes');
+    function showApptToast(msg, isError = false) {
+      const toastEl = isError ? document.getElementById('apptErrorToast') : document.getElementById('apptToast');
+      const toastMsg = isError ? document.getElementById('apptErrorToastMsg') : document.getElementById('apptToastMsg');
+      toastMsg.textContent = msg;
+      const toast = new bootstrap.Toast(toastEl);
+      toast.show();
+    }
+    // Set min date/time to now
+    function setMinDateTime() {
+      const now = new Date();
+      now.setMinutes(now.getMinutes() - now.getTimezoneOffset());
+      dateInput.min = now.toISOString().slice(0,16);
+    }
+    setMinDateTime();
+    bookBtn.onclick = function() {
+      setMinDateTime();
+      loadDoctors();
+      loadServices();
+      bookForm.reset();
+      bookModal.show();
+    };
+    async function loadDoctors() {
+      doctorSelect.innerHTML = '<option value="">Loading...</option>';
+      const snap = await firebase.firestore().collection('users').where('role','==','doctor').get();
+      let options = '<option value="">Select doctor</option>';
+      snap.forEach(doc => {
+        const d = doc.data();
+        options += `<option value="${doc.id}|${d.name||d.email}">${d.name||d.email}</option>`;
+      });
+      doctorSelect.innerHTML = options;
+    }
+    async function loadServices() {
+      serviceSelect.innerHTML = '<option value="">Loading...</option>';
+      const snap = await firebase.firestore().collection('services').get();
+      let options = '<option value="">Select service</option>';
+      snap.forEach(doc => {
+        const s = doc.data();
+        options += `<option value="${doc.id}|${s.name}">${s.name}</option>`;
+      });
+      serviceSelect.innerHTML = options;
+    }
+    bookForm.onsubmit = async function(e) {
+      e.preventDefault();
+      const dateVal = dateInput.value;
+      const doctorVal = doctorSelect.value;
+      const serviceVal = serviceSelect.value;
+      const notesVal = notesInput.value.trim();
+      if (!dateVal || !doctorVal || !serviceVal) {
+        showApptToast('Please fill all required fields.', true);
+        return;
+      }
+      const [doctorId, doctorName] = doctorVal.split('|');
+      const [serviceId, serviceName] = serviceVal.split('|');
+      const apptDate = new Date(dateVal);
+      if (apptDate < new Date()) {
+        showApptToast('Please select a future date/time.', true);
+        return;
+      }
+      // Prevent double-booking (same patient, doctor, date)
+      const existing = await firebase.firestore().collection('appointments')
+        .where('userId','==',currentUser.uid)
+        .where('doctorId','==',doctorId)
+        .where('date','==',apptDate.toISOString())
+        .get();
+      if (!existing.empty) {
+        showApptToast('You already have an appointment with this doctor at this time.', true);
+        return;
+      }
+      try {
+        await firebase.firestore().collection('appointments').add({
+          userId: currentUser.uid,
+          patient: currentUser.displayName || currentUser.email,
+          doctorId, doctor: doctorName,
+          serviceId, service: serviceName,
+          date: apptDate.toISOString(),
+          notes: notesVal,
+          status: 'pending',
+          createdAt: firebase.firestore.FieldValue.serverTimestamp()
+        });
+        showApptToast('Appointment booked successfully!');
+        bookModal.hide();
+        loadAppointments();
+      } catch (err) {
+        showApptToast(err.message || 'Error booking appointment.', true);
+      }
+    };
+    // --- Edit Appointment Logic ---
+    const editModal = new bootstrap.Modal(document.getElementById('editAppointmentModal'));
+    const editForm = document.getElementById('editAppointmentForm');
+    const editIdInput = document.getElementById('editAppointmentId');
+    const editDateInput = document.getElementById('editAppointmentDate');
+    const editDoctorSelect = document.getElementById('editAppointmentDoctor');
+    const editServiceSelect = document.getElementById('editAppointmentService');
+    const editNotesInput = document.getElementById('editAppointmentNotes');
+    function setEditMinDateTime() {
+      const now = new Date();
+      now.setMinutes(now.getMinutes() - now.getTimezoneOffset());
+      editDateInput.min = now.toISOString().slice(0,16);
+    }
+    async function onEditAppointment(e) {
+      const apptId = e.currentTarget.getAttribute('data-id');
+      const doc = await firebase.firestore().collection('appointments').doc(apptId).get();
+      if (!doc.exists) return;
+      const data = doc.data();
+      editIdInput.value = apptId;
+      setEditMinDateTime();
+      // Load doctors and services
+      await loadEditDoctors(data.doctorId);
+      await loadEditServices(data.serviceId);
+      // Set values
+      editDateInput.value = data.date ? new Date(data.date).toISOString().slice(0,16) : '';
+      editDoctorSelect.value = data.doctorId + '|' + data.doctor;
+      editServiceSelect.value = data.serviceId + '|' + data.service;
+      editNotesInput.value = data.notes || '';
+      editModal.show();
+    }
+    async function loadEditDoctors(selectedId) {
+      editDoctorSelect.innerHTML = '<option value="">Loading...</option>';
+      const snap = await firebase.firestore().collection('users').where('role','==','doctor').get();
+      let options = '<option value="">Select doctor</option>';
+      snap.forEach(doc => {
+        const d = doc.data();
+        const val = doc.id + '|' + (d.name||d.email);
+        options += `<option value="${val}"${selectedId===doc.id?' selected':''}>${d.name||d.email}</option>`;
+      });
+      editDoctorSelect.innerHTML = options;
+    }
+    async function loadEditServices(selectedId) {
+      editServiceSelect.innerHTML = '<option value="">Loading...</option>';
+      const snap = await firebase.firestore().collection('services').get();
+      let options = '<option value="">Select service</option>';
+      snap.forEach(doc => {
+        const s = doc.data();
+        const val = doc.id + '|' + s.name;
+        options += `<option value="${val}"${selectedId===doc.id?' selected':''}>${s.name}</option>`;
+      });
+      editServiceSelect.innerHTML = options;
+    }
+    editForm.onsubmit = async function(e) {
+      e.preventDefault();
+      const apptId = editIdInput.value;
+      const dateVal = editDateInput.value;
+      const doctorVal = editDoctorSelect.value;
+      const serviceVal = editServiceSelect.value;
+      const notesVal = editNotesInput.value.trim();
+      if (!dateVal || !doctorVal || !serviceVal) {
+        showApptToast('Please fill all required fields.', true);
+        return;
+      }
+      const [doctorId, doctorName] = doctorVal.split('|');
+      const [serviceId, serviceName] = serviceVal.split('|');
+      const apptDate = new Date(dateVal);
+      if (apptDate < new Date()) {
+        showApptToast('Please select a future date/time.', true);
+        return;
+      }
+      // Prevent double-booking (same patient, doctor, date, excluding this appt)
+      const existing = await firebase.firestore().collection('appointments')
+        .where('userId','==',currentUser.uid)
+        .where('doctorId','==',doctorId)
+        .where('date','==',apptDate.toISOString())
+        .get();
+      if (!existing.empty && existing.docs[0].id !== apptId) {
+        showApptToast('You already have an appointment with this doctor at this time.', true);
+        return;
+      }
+      try {
+        await firebase.firestore().collection('appointments').doc(apptId).update({
+          doctorId, doctor: doctorName,
+          serviceId, service: serviceName,
+          date: apptDate.toISOString(),
+          notes: notesVal
+        });
+        showApptToast('Appointment updated successfully!');
+        editModal.hide();
+        loadAppointments();
+      } catch (err) {
+        showApptToast(err.message || 'Error updating appointment.', true);
+      }
+    };
+    // --- Cancel Appointment Logic ---
+    const cancelModal = new bootstrap.Modal(document.getElementById('cancelAppointmentModal'));
+    const cancelIdInput = document.getElementById('cancelAppointmentId');
+    document.getElementById('confirmCancelAppointment').onclick = async function() {
+      const apptId = cancelIdInput.value;
+      if (!apptId) return;
+      try {
+        await firebase.firestore().collection('appointments').doc(apptId).delete();
+        showApptToast('Appointment cancelled.');
+        cancelModal.hide();
+        loadAppointments();
+      } catch (err) {
+        showApptToast(err.message || 'Error cancelling appointment.', true);
+      }
+    };
+    function onCancelAppointment(e) {
+      const apptId = e.currentTarget.getAttribute('data-id');
+      cancelIdInput.value = apptId;
+      cancelModal.show();
+    }
+  </script>
+</body>
+</html> 

@@ -1,0 +1,388 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  <title>Profile - Alisay Medical Center</title>
+  <link href="https://cdn.jsdelivr.net/npm/bootstrap@5.3.2/dist/css/bootstrap.min.css" rel="stylesheet">
+  <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.4.0/css/all.min.css">
+  <style>
+    html, body { height: 100%; }
+    body { min-height: 100vh; height: 100%; background: linear-gradient(135deg, #e0eafc 0%, #cfdef3 100%); display: flex; flex-direction: column; }
+    .dashboard-container { display: flex; min-height: 0; flex: 1 0 auto; }
+    .sidebar { min-width: 220px; max-width: 220px; background: #1a237e; color: #fff; display: flex; flex-direction: column; padding: 2rem 1rem 1rem 1rem; box-shadow: 2px 0 8px rgba(31,38,135,0.08); }
+    .sidebar .nav-link { color: #fff; font-weight: 500; margin-bottom: 1rem; border-radius: 0.5rem; transition: background 0.2s; }
+    .sidebar .nav-link.active, .sidebar .nav-link:hover { background: #3949ab; color: #fff; }
+    .sidebar .sidebar-logo { font-size: 1.5rem; font-weight: bold; margin-bottom: 2rem; text-align: center; letter-spacing: 1px; }
+    .main-content { flex: 1 1 auto; padding: 0; display: flex; flex-direction: column; min-width: 0; }
+    .topbar { background: #fff; box-shadow: 0 2px 8px rgba(31,38,135,0.06); padding: 1rem 2rem; display: flex; align-items: center; justify-content: flex-end; min-height: 64px; }
+    .topbar .profile { display: flex; align-items: center; gap: 0.75rem; cursor: pointer; }
+    .topbar .profile-img { width: 40px; height: 40px; border-radius: 50%; object-fit: cover; background: #e3e3e3; display: flex; align-items: center; justify-content: center; font-size: 1.5rem; color: #3949ab; }
+    .content-area { flex: 1 1 auto; padding: 2rem; background: transparent; min-height: 0; }
+    .profile-card { background: #fff; border-radius: 1.25rem; box-shadow: 0 4px 24px rgba(31,38,135,0.10); padding: 2.5rem 2rem 2rem 2rem; max-width: 480px; margin: 0 auto 2rem auto; position: relative; }
+    .profile-card .profile-picture { width: 120px; height: 120px; object-fit: cover; border-radius: 50%; border: 4px solid #e0eafc; box-shadow: 0 2px 8px rgba(31,38,135,0.10); margin: -80px auto 1rem auto; display: block; background: #e3e3e3; }
+    .profile-card .profile-header { font-size: 1.5rem; font-weight: 700; margin-bottom: 0.25rem; }
+    .profile-card .profile-sub { color: #6c757d; font-size: 1rem; margin-bottom: 1.5rem; }
+    .profile-card .profile-fields { margin-bottom: 1.5rem; }
+    .profile-card .profile-field { display: flex; justify-content: space-between; align-items: center; padding: 0.75rem 0; border-bottom: 1px solid #f0f0f0; }
+    .profile-card .profile-field:last-child { border-bottom: none; }
+    .profile-card .profile-label { color: #6c757d; font-size: 1rem; font-weight: 500; }
+    .profile-card .profile-value { font-size: 1.08rem; font-weight: 600; color: #222; text-align: right; }
+    .profile-card .profile-actions { display: flex; gap: 1rem; justify-content: center; margin-top: 1.5rem; }
+    .profile-card .edit-btn, .profile-card .password-btn { min-width: 140px; }
+    .profile-card .edit-btn i, .profile-card .password-btn i { margin-right: 0.5rem; }
+    .audit-log-card { background: #fff; border-radius: 1.25rem; box-shadow: 0 2px 12px rgba(31,38,135,0.08); padding: 1.5rem 1rem; max-width: 480px; margin: 0 auto 2rem auto; }
+    .audit-log-header { display: flex; align-items: center; gap: 0.5rem; font-size: 1.1rem; font-weight: 600; margin-bottom: 1rem; color: #3949ab; cursor: pointer; }
+    .audit-log-table { font-size: 0.97rem; }
+    .audit-log-table th, .audit-log-table td { vertical-align: middle; }
+    .audit-log-table th { background: #f5f7fa; }
+    .audit-log-table tr { border-bottom: 1px solid #f0f0f0; }
+    .audit-log-table tr:last-child { border-bottom: none; }
+    .sidebar-mobile-overlay { display: none; position: fixed; top: 0; left: 0; right: 0; bottom: 0; background: rgba(0,0,0,0.3); z-index: 1999; }
+    .sidebar-mobile-overlay.active { display: block; }
+    .sidebar-mobile { position: fixed; top: 0; left: 0; width: 220px; height: 100vh; background: #1a237e; color: #fff; display: flex; flex-direction: column; padding: 2rem 1rem 1rem 1rem; box-shadow: 2px 0 8px rgba(31,38,135,0.08); z-index: 2000; transition: transform 0.3s ease; transform: translateX(-100%); }
+    .sidebar-mobile.show { transform: translateX(0); }
+    .sidebar-toggle-btn { display: none; }
+    @media (max-width: 991.98px) { .dashboard-container { flex-direction: column; } .sidebar { display: none !important; } .sidebar-toggle-btn { display: inline-block !important; position: fixed; top: 16px; left: 16px; z-index: 2100; } .sidebar-mobile { display: flex; } .sidebar .nav { flex-direction: row; width: 100%; justify-content: space-around; } .sidebar .sidebar-logo { display: none; } }
+    @media (min-width: 992px) { .sidebar-mobile, .sidebar-mobile-overlay, .sidebar-toggle-btn { display: none !important; } }
+    @media (max-width: 600px) {
+      .profile-card, .audit-log-card { padding: 1.2rem 0.5rem; }
+      .profile-card .profile-picture { width: 80px; height: 80px; margin: -50px auto 1rem auto; }
+    }
+    footer { margin-top: auto; flex-shrink: 0; }
+  </style>
+</head>
+<body>
+  <div class="dashboard-container">
+    <aside class="sidebar">
+      <div class="sidebar-logo">
+        <i class="fa-solid fa-hospital"></i> Alisay Patient
+      </div>
+      <nav class="nav flex-column">
+        <a class="nav-link" href="dashboard-patient.html"><i class="fa-solid fa-house me-2"></i>Dashboard</a>
+        <a class="nav-link" href="patient-appointments.html"><i class="fa-solid fa-calendar-check me-2"></i>Appointments</a>
+        <a class="nav-link" href="patient-prescriptions.html"><i class="fa-solid fa-file-medical me-2"></i>Prescriptions</a>
+        <a class="nav-link" href="patient-complaints.html"><i class="fa-solid fa-comment-medical me-2"></i>Complaints</a>
+        <a class="nav-link active" href="patient-profile.html"><i class="fa-solid fa-user me-2"></i>Profile</a>
+        <a class="nav-link text-danger" href="#" onclick="logout()"><i class="fa-solid fa-sign-out-alt me-2"></i>Logout</a>
+      </nav>
+    </aside>
+    <div class="sidebar-mobile" id="sidebarMobile">
+      <div class="sidebar-logo mb-4">
+        <i class="fa-solid fa-hospital"></i> Alisay Patient
+      </div>
+      <nav class="nav flex-column">
+        <a class="nav-link" href="dashboard-patient.html"><i class="fa-solid fa-house me-2"></i>Dashboard</a>
+        <a class="nav-link" href="patient-appointments.html"><i class="fa-solid fa-calendar-check me-2"></i>Appointments</a>
+        <a class="nav-link" href="patient-prescriptions.html"><i class="fa-solid fa-file-medical me-2"></i>Prescriptions</a>
+        <a class="nav-link" href="patient-complaints.html"><i class="fa-solid fa-comment-medical me-2"></i>Complaints</a>
+        <a class="nav-link active" href="patient-profile.html"><i class="fa-solid fa-user me-2"></i>Profile</a>
+        <a class="nav-link text-danger" href="#" onclick="logout()"><i class="fa-solid fa-sign-out-alt me-2"></i>Logout</a>
+      </nav>
+    </div>
+    <div class="sidebar-mobile-overlay" id="sidebarMobileOverlay"></div>
+    <button class="btn btn-primary sidebar-toggle-btn d-lg-none" id="sidebarToggleBtn" title="Open menu"><i class="fa-solid fa-bars"></i></button>
+    <div class="main-content">
+      <div class="topbar">
+        <div class="profile" id="patient-profile-link">
+          <div class="profile-img"><i class="fa-solid fa-user-injured"></i></div>
+          <span id="patient-name">Patient</span>
+        </div>
+      </div>
+      <div class="content-area">
+        <div class="profile-card fade-in">
+          <img id="profile-picture" class="profile-picture" src="https://ui-avatars.com/api/?name=Patient" alt="Profile Picture">
+          <div class="profile-header text-center">Your Profile</div>
+          <div class="profile-sub text-center">View and update your personal information.</div>
+          <div class="profile-fields">
+            <div class="profile-field"><span class="profile-label">Name:</span><span class="profile-value" id="profile-name">Loading...</span></div>
+            <div class="profile-field"><span class="profile-label">Email:</span><span class="profile-value" id="profile-email">Loading...</span></div>
+            <div class="profile-field"><span class="profile-label">Phone:</span><span class="profile-value" id="profile-phone">Loading...</span></div>
+            <div class="profile-field"><span class="profile-label">Address:</span><span class="profile-value" id="profile-address">Loading...</span></div>
+            <div class="profile-field"><span class="profile-label">Last Login:</span><span class="profile-value" id="profile-last-login">Loading...</span></div>
+          </div>
+          <div class="profile-actions">
+            <button class="btn btn-primary edit-btn" id="editProfileBtn"><i class="fa-solid fa-pen-to-square"></i>Edit Info</button>
+            <button class="btn btn-outline-secondary password-btn" id="changePasswordBtn"><i class="fa-solid fa-key"></i>Change Password</button>
+          </div>
+        </div>
+        <!-- Audit Log -->
+        <div class="audit-log-card">
+          <div class="audit-log-header" data-bs-toggle="collapse" data-bs-target="#auditLogCollapse" aria-controls="auditLogCollapse">
+            <i class="fa-solid fa-clock-rotate-left"></i> Profile Audit Log
+          </div>
+          <div class="collapse show" id="auditLogCollapse">
+            <div class="table-responsive">
+              <table class="table table-sm table-bordered align-middle mb-0 audit-log-table">
+                <thead>
+                  <tr><th>Date</th><th>Action</th><th>Field</th><th>Old Value</th><th>New Value</th></tr>
+                </thead>
+                <tbody id="audit-log-table-body"><tr><td colspan="5">Loading...</td></tr></tbody>
+              </table>
+            </div>
+          </div>
+        </div>
+      </div>
+      <!-- Edit Profile Modal -->
+      <div class="modal fade" id="editProfileModal" tabindex="-1" aria-labelledby="editProfileModalLabel" aria-hidden="true">
+        <div class="modal-dialog">
+          <div class="modal-content">
+            <form id="editProfileForm">
+              <div class="modal-header bg-primary text-white">
+                <h5 class="modal-title" id="editProfileModalLabel"><i class="fa-solid fa-user-pen me-2"></i>Edit Profile</h5>
+                <button type="button" class="btn-close btn-close-white" data-bs-dismiss="modal" aria-label="Close"></button>
+              </div>
+              <div class="modal-body">
+                <div class="mb-3 text-center">
+                  <img id="editProfilePicturePreview" src="https://ui-avatars.com/api/?name=Patient" alt="Profile Picture Preview" class="rounded-circle shadow mb-2" style="width: 72px; height: 72px; object-fit: cover; border: 2px solid #eee; background: #e3e3e3;">
+                  <input type="file" class="form-control mt-2" id="editProfilePicture" accept="image/*">
+                </div>
+                <div class="row g-2">
+                  <div class="col-12 col-md-6 mb-3">
+                    <label for="editName" class="form-label">Name</label>
+                    <input type="text" class="form-control" id="editName" required>
+                  </div>
+                  <div class="col-12 col-md-6 mb-3">
+                    <label for="editEmail" class="form-label">Email</label>
+                    <input type="email" class="form-control" id="editEmail" required>
+                  </div>
+                  <div class="col-12 col-md-6 mb-3">
+                    <label for="editPhone" class="form-label">Phone</label>
+                    <input type="text" class="form-control" id="editPhone">
+                  </div>
+                  <div class="col-12 col-md-6 mb-3">
+                    <label for="editAddress" class="form-label">Address</label>
+                    <input type="text" class="form-control" id="editAddress">
+                  </div>
+                </div>
+              </div>
+              <div class="modal-footer">
+                <button type="button" class="btn btn-secondary" data-bs-dismiss="modal">Cancel</button>
+                <button type="submit" class="btn btn-primary">Save Changes</button>
+              </div>
+            </form>
+          </div>
+        </div>
+      </div>
+      <!-- Change Password Modal -->
+      <div class="modal fade" id="changePasswordModal" tabindex="-1" aria-labelledby="changePasswordModalLabel" aria-hidden="true">
+        <div class="modal-dialog">
+          <div class="modal-content">
+            <form id="changePasswordForm">
+              <div class="modal-header">
+                <h5 class="modal-title" id="changePasswordModalLabel">Change Password</h5>
+                <button type="button" class="btn-close" data-bs-dismiss="modal" aria-label="Close"></button>
+              </div>
+              <div class="modal-body">
+                <div class="mb-3">
+                  <label for="currentPassword" class="form-label">Current Password</label>
+                  <input type="password" class="form-control" id="currentPassword" required autocomplete="current-password">
+                </div>
+                <div class="mb-3">
+                  <label for="newPassword" class="form-label">New Password</label>
+                  <input type="password" class="form-control" id="newPassword" required autocomplete="new-password">
+                </div>
+              </div>
+              <div class="modal-footer">
+                <button type="button" class="btn btn-secondary" data-bs-dismiss="modal">Cancel</button>
+                <button type="submit" class="btn btn-primary">Change Password</button>
+              </div>
+            </form>
+          </div>
+        </div>
+      </div>
+      <!-- Toasts -->
+      <div class="position-fixed bottom-0 end-0 p-3" style="z-index: 3000">
+        <div id="profileToast" class="toast align-items-center text-bg-success border-0" role="alert" aria-live="assertive" aria-atomic="true">
+          <div class="d-flex">
+            <div class="toast-body" id="profileToastMsg">Profile updated successfully!</div>
+            <button type="button" class="btn-close btn-close-white me-2 m-auto" data-bs-dismiss="toast" aria-label="Close"></button>
+          </div>
+        </div>
+        <div id="profileErrorToast" class="toast align-items-center text-bg-danger border-0" role="alert" aria-live="assertive" aria-atomic="true">
+          <div class="d-flex">
+            <div class="toast-body" id="profileErrorToastMsg">Error updating profile.</div>
+            <button type="button" class="btn-close btn-close-white me-2 m-auto" data-bs-dismiss="toast" aria-label="Close"></button>
+          </div>
+        </div>
+      </div>
+    </div>
+  </div>
+  <footer class="text-center py-3 bg-light shadow-sm">
+    <p class="mb-0">&copy; 2025 Alisay Medical Center</p>
+  </footer>
+  <script src="https://cdn.jsdelivr.net/npm/bootstrap@5.3.2/dist/js/bootstrap.bundle.min.js"></script>
+  <script src="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.4.0/js/all.min.js"></script>
+  <script src="https://www.gstatic.com/firebasejs/9.22.2/firebase-app-compat.js"></script>
+  <script src="https://www.gstatic.com/firebasejs/9.22.2/firebase-auth-compat.js"></script>
+  <script src="https://www.gstatic.com/firebasejs/9.22.2/firebase-firestore-compat.js"></script>
+  <script src="https://www.gstatic.com/firebasejs/9.22.2/firebase-storage-compat.js"></script>
+  <script src="assets/js/main.js"></script>
+  <script src="assets/js/auth.js"></script>
+  <script>
+    function logout() { firebase.auth().signOut().then(() => { window.location.href = 'login.html'; }); }
+    document.getElementById('patient-profile-link').onclick = function() { window.location.href = 'patient-profile.html'; };
+    const sidebarMobile = document.getElementById('sidebarMobile');
+    const sidebarMobileOverlay = document.getElementById('sidebarMobileOverlay');
+    const sidebarToggleBtn = document.getElementById('sidebarToggleBtn');
+    function toggleSidebarMobile() { if (sidebarMobile.classList.contains('show')) { sidebarMobile.classList.remove('show'); sidebarMobileOverlay.classList.remove('active'); } else { sidebarMobile.classList.add('show'); sidebarMobileOverlay.classList.add('active'); } }
+    sidebarToggleBtn.addEventListener('click', toggleSidebarMobile);
+    sidebarMobileOverlay.addEventListener('click', toggleSidebarMobile);
+    sidebarMobile.querySelectorAll('a.nav-link').forEach(link => { link.addEventListener('click', () => { sidebarMobile.classList.remove('show'); sidebarMobileOverlay.classList.remove('active'); }); });
+
+    // --- Patient Profile Logic ---
+    const auth = firebase.auth();
+    const db = firebase.firestore();
+    let currentUser = null;
+    let userDocRef = null;
+    let userData = {};
+    const storage = firebase.storage();
+    let profilePictureUrl = '';
+
+    function showToast(msg, isError = false) {
+      const toastEl = isError ? document.getElementById('profileErrorToast') : document.getElementById('profileToast');
+      const toastMsg = isError ? document.getElementById('profileErrorToastMsg') : document.getElementById('profileToastMsg');
+      toastMsg.textContent = msg;
+      const toast = new bootstrap.Toast(toastEl);
+      toast.show();
+    }
+
+    auth.onAuthStateChanged(async user => {
+      if (!user) { window.location.href = 'login.html'; return; }
+      currentUser = user;
+      userDocRef = db.collection('users').doc(user.uid);
+      document.getElementById('patient-name').textContent = user.displayName || 'Patient';
+      // Load profile info
+      document.getElementById('profile-name').textContent = user.displayName || '—';
+      document.getElementById('profile-email').textContent = user.email || '—';
+      document.getElementById('profile-last-login').textContent = user.metadata.lastSignInTime ? new Date(user.metadata.lastSignInTime).toLocaleString() : '—';
+      try {
+        const doc = await userDocRef.get();
+        if (doc.exists) {
+          userData = doc.data();
+          document.getElementById('profile-phone').textContent = userData.phone || '—';
+          document.getElementById('profile-address').textContent = userData.address || '—';
+          profilePictureUrl = userData.profilePictureUrl || '';
+          document.getElementById('profile-picture').src = profilePictureUrl || `https://ui-avatars.com/api/?name=${encodeURIComponent(user.displayName || 'Patient')}`;
+        } else {
+          document.getElementById('profile-phone').textContent = '—';
+          document.getElementById('profile-address').textContent = '—';
+          document.getElementById('profile-picture').src = `https://ui-avatars.com/api/?name=${encodeURIComponent(user.displayName || 'Patient')}`;
+        }
+        fetchAuditLog();
+      } catch (e) { /* ignore */ }
+    });
+
+    // Edit Profile
+    document.getElementById('editProfileBtn').onclick = function() {
+      document.getElementById('editName').value = currentUser.displayName || '';
+      document.getElementById('editEmail').value = currentUser.email || '';
+      document.getElementById('editPhone').value = userData.phone || '';
+      document.getElementById('editAddress').value = userData.address || '';
+      document.getElementById('editProfilePicturePreview').src = profilePictureUrl || `https://ui-avatars.com/api/?name=${encodeURIComponent(currentUser.displayName || 'Patient')}`;
+      new bootstrap.Modal(document.getElementById('editProfileModal')).show();
+    };
+    document.getElementById('editProfilePicture').onchange = function(e) {
+      const file = e.target.files[0];
+      if (file) {
+        const reader = new FileReader();
+        reader.onload = function(ev) {
+          document.getElementById('editProfilePicturePreview').src = ev.target.result;
+        };
+        reader.readAsDataURL(file);
+      }
+    };
+    document.getElementById('editProfileForm').onsubmit = async function(e) {
+      e.preventDefault();
+      const newName = document.getElementById('editName').value.trim();
+      const newEmail = document.getElementById('editEmail').value.trim();
+      const newPhone = document.getElementById('editPhone').value.trim();
+      const newAddress = document.getElementById('editAddress').value.trim();
+      const pictureFile = document.getElementById('editProfilePicture').files[0];
+      let updateProfile = false, updateEmail = false, updatePhone = false, updateAddress = false, updatePicture = false;
+      if (newName && newName !== currentUser.displayName) updateProfile = true;
+      if (newEmail && newEmail !== currentUser.email) updateEmail = true;
+      if (newPhone && newPhone !== (userData.phone || '')) updatePhone = true;
+      if (newAddress && newAddress !== (userData.address || '')) updateAddress = true;
+      if (pictureFile) updatePicture = true;
+      let newProfilePictureUrl = profilePictureUrl;
+      try {
+        if (updateProfile) await currentUser.updateProfile({ displayName: newName });
+        if (updateEmail) await currentUser.updateEmail(newEmail);
+        if (updatePicture) {
+          const storageRef = storage.ref(`profilePictures/${currentUser.uid}`);
+          await storageRef.put(pictureFile);
+          newProfilePictureUrl = await storageRef.getDownloadURL();
+        }
+        await userDocRef.set({
+          name: newName,
+          email: newEmail,
+          phone: newPhone,
+          address: newAddress,
+          profilePictureUrl: newProfilePictureUrl
+        }, { merge: true });
+        // Audit log
+        if (updateProfile) await logAudit('update', 'name', userData.name || '', newName);
+        if (updateEmail) await logAudit('update', 'email', userData.email || '', newEmail);
+        if (updatePhone) await logAudit('update', 'phone', userData.phone || '', newPhone);
+        if (updateAddress) await logAudit('update', 'address', userData.address || '', newAddress);
+        if (updatePicture) await logAudit('update', 'profilePictureUrl', profilePictureUrl || '', newProfilePictureUrl);
+        showToast('Profile updated successfully!');
+        setTimeout(() => window.location.reload(), 1200);
+      } catch (err) {
+        showToast(err.message || 'Error updating profile.', true);
+      }
+    };
+    // Change Password
+    document.getElementById('changePasswordBtn').onclick = function() {
+      document.getElementById('currentPassword').value = '';
+      document.getElementById('newPassword').value = '';
+      new bootstrap.Modal(document.getElementById('changePasswordModal')).show();
+    };
+    document.getElementById('changePasswordForm').onsubmit = async function(e) {
+      e.preventDefault();
+      const currentPassword = document.getElementById('currentPassword').value;
+      const newPassword = document.getElementById('newPassword').value;
+      if (!currentPassword || !newPassword) return;
+      const cred = firebase.auth.EmailAuthProvider.credential(currentUser.email, currentPassword);
+      try {
+        await currentUser.reauthenticateWithCredential(cred);
+        await currentUser.updatePassword(newPassword);
+        showToast('Password changed successfully!');
+        bootstrap.Modal.getInstance(document.getElementById('changePasswordModal')).hide();
+      } catch (err) {
+        showToast(err.message || 'Error changing password.', true);
+      }
+    };
+    // Audit log logic
+    async function logAudit(action, field, oldValue, newValue) {
+      if (!currentUser || !userDocRef) return;
+      await userDocRef.collection('auditLogs').add({
+        action,
+        field,
+        oldValue,
+        newValue,
+        timestamp: firebase.firestore.FieldValue.serverTimestamp()
+      });
+      fetchAuditLog();
+    }
+    async function fetchAuditLog() {
+      if (!currentUser || !userDocRef) return;
+      const tbody = document.getElementById('audit-log-table-body');
+      tbody.innerHTML = '<tr><td colspan="5">Loading...</td></tr>';
+      const snapshot = await userDocRef.collection('auditLogs').orderBy('timestamp', 'desc').limit(20).get();
+      tbody.innerHTML = '';
+      snapshot.forEach(doc => {
+        const log = doc.data();
+        const date = log.timestamp && log.timestamp.toDate ? log.timestamp.toDate().toLocaleString() : '';
+        const tr = document.createElement('tr');
+        tr.innerHTML = `<td>${date}</td><td>${log.action}</td><td>${log.field}</td><td>${log.oldValue}</td><td>${log.newValue}</td>`;
+        tbody.appendChild(tr);
+      });
+      if (tbody.innerHTML === '') {
+        tbody.innerHTML = '<tr><td colspan="5">No audit log entries.</td></tr>';
+      }
+    }
+  </script>
+</body>
+</html> 
