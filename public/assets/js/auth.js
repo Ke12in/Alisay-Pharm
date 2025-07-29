@@ -263,7 +263,7 @@ if (window.location.pathname.endsWith('admin-services.html')) {
         tr.innerHTML = `
           <td>${service.name || ''}</td>
           <td>${service.description || ''}</td>
-          <td>${service.price !== undefined ? '₦' + Number(service.price).toFixed(2) : ''}</td>
+          <td>${service.price !== undefined ? '₵' + Number(service.price).toFixed(2) : ''}</td>
           <td>
             <button class="btn btn-sm btn-outline-primary me-2 edit-service-btn" data-id="${service.id}">Edit</button>
             <button class="btn btn-sm btn-outline-danger delete-service-btn" data-id="${service.id}">Delete</button>
@@ -401,7 +401,7 @@ if (window.location.pathname.endsWith('admin-products.html')) {
         tr.innerHTML = `
           <td>${product.name || ''}</td>
           <td>${product.category || ''}</td>
-          <td>${product.price !== undefined ? '₦' + Number(product.price).toFixed(2) : ''}</td>
+          <td>${product.price !== undefined ? '₵' + Number(product.price).toFixed(2) : ''}</td>
           <td>${product.stock !== undefined ? product.stock : ''}</td>
           <td>
             <button class="btn btn-sm btn-outline-primary me-2 edit-product-btn" data-id="${product.id}">Edit</button>
