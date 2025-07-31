@@ -12,6 +12,7 @@
     body {
       min-height: 100vh;
       height: 100%;
+      width: 100%;
       background: linear-gradient(135deg, #e0eafc 0%, #cfdef3 100%);
       display: flex;
       flex-direction: column;
@@ -22,6 +23,7 @@
       align-items: center;
       justify-content: center;
       min-height: 80vh;
+      width:100%;
     }
     .fade-in {
       opacity: 0;
@@ -58,6 +60,18 @@
       min-width: 140px;
     }
     footer { flex-shrink: 0; }
+    .content-area { flex: 1 1 auto; padding: 2rem; background: transparent; min-height: 0; }
+    .sidebar-mobile-overlay { display: none; position: fixed; top: 0; left: 0; right: 0; bottom: 0; background: rgba(0,0,0,0.3); z-index: 1999; }
+    .sidebar-mobile-overlay.active { display: block; }
+    .sidebar-mobile { position: fixed; top: 0; left: 0; width: 220px; height: 100vh; background: #1a237e; color: #fff; display: flex; flex-direction: column; padding: 2rem 1rem 1rem 1rem; box-shadow: 2px 0 8px rgba(31,38,135,0.08); z-index: 2000; transition: transform 0.3s ease; transform: translateX(-100%); }
+    .sidebar-mobile.show { transform: translateX(0); }
+    .sidebar-toggle-btn { display: none; }
+    /* Increase table width and improve button spacing */
+    .table-responsive { min-width: 1200px; }
+    .action-buttons { display: flex; gap: 0.25rem; flex-wrap: wrap; }
+    .action-buttons .btn { font-size: 0.75rem; padding: 0.25rem 0.5rem; }
+    .modal { z-index: 1055; }
+    .modal-backdrop { z-index: 1050; }
   </style>
 </head>
 <body>
@@ -68,6 +82,28 @@
         <img src="https://img.icons8.com/ios-filled/100/4a90e2/hospital-room.png" alt="Logo" class="logo mb-2">
         <h2 class="mb-2">Welcome, Doctor!</h2>
         <p class="text-muted mb-4">View your appointments and manage patient records.</p>
+      </div>
+      <div class="topbar">
+        <div class="d-flex align-items-center gap-3">
+          <div class="dropdown">
+            <button class="btn btn-outline-primary position-relative" type="button" id="notificationsDropdown" data-bs-toggle="dropdown" aria-expanded="false" title="Notifications">
+              <i class="fa-solid fa-bell"></i>
+              <span class="position-absolute top-0 start-100 translate-middle badge rounded-pill bg-danger" id="notificationBadge" style="display: none;">
+                0
+              </span>
+            </button>
+            <ul class="dropdown-menu dropdown-menu-end" aria-labelledby="notificationsDropdown" style="width: 300px;">
+              <li><h6 class="dropdown-header">Notifications</h6></li>
+              <li><hr class="dropdown-divider"></li>
+              <div id="notificationsList">
+                <li class="px-3 py-2 text-muted">No new notifications</li>
+              </div>
+            </ul>
+          </div>
+          <div class="profile" id="doctor-profile-link">
+            <span id="doctor-name" class="fw-bold text-primary">Doctor</span>
+          </div>
+        </div>
       </div>
       <div id="appointments-section">
         <div class="d-flex justify-content-between align-items-center mb-2">
@@ -139,11 +175,19 @@
           </div>
         </div>
         <div id="calendarViewContainer" class="d-none">
-          <div id="doctorCalendar"></div>
+          <div class="d-flex justify-content-between align-items-center mb-3">
+            <h5><i class="fa-solid fa-calendar-days me-2"></i>Calendar View</h5>
+            <button class="btn btn-outline-secondary" id="backToTableViewBtn">
+              <i class="fa-solid fa-table"></i> Back to Table
+            </button>
+        </div>
+          <div class="card p-3">
+            <div id="doctorCalendar" style="min-height: 500px;"></div>
+      </div>
         </div>
       </div>
-      <!-- View Details Modal -->
-      <div class="modal fade" id="viewAppointmentModal" tabindex="-1" aria-labelledby="viewAppointmentModalLabel" aria-hidden="true">
+      <!-- View Appointment Modal -->
+      <div class="modal fade" id="viewAppointmentModal" tabindex="-1" aria-labelledby="viewAppointmentModalLabel" aria-hidden="true" data-bs-backdrop="static">
         <div class="modal-dialog">
           <div class="modal-content">
             <div class="modal-header bg-info text-white">
@@ -151,13 +195,16 @@
               <button type="button" class="btn-close btn-close-white" data-bs-dismiss="modal" aria-label="Close"></button>
             </div>
             <div class="modal-body" id="viewAppointmentBody">
-              <!-- Details will be loaded here -->
+              <!-- Content will be loaded here -->
             </div>
+            <div class="modal-footer">
+              <button type="button" class="btn btn-secondary" data-bs-dismiss="modal">Close</button>
           </div>
         </div>
       </div>
-      <!-- Reject Modal -->
-      <div class="modal fade" id="rejectAppointmentModal" tabindex="-1" aria-labelledby="rejectAppointmentModalLabel" aria-hidden="true">
+      </div>
+      <!-- Reject Appointment Modal -->
+      <div class="modal fade" id="rejectAppointmentModal" tabindex="-1" aria-labelledby="rejectAppointmentModalLabel" aria-hidden="true" data-bs-backdrop="static">
         <div class="modal-dialog">
           <div class="modal-content">
             <form id="rejectAppointmentForm">
@@ -180,28 +227,114 @@
           </div>
         </div>
       </div>
-      <!-- Upload Lab Results Modal -->
-      <div class="modal fade" id="uploadLabModal" tabindex="-1" aria-labelledby="uploadLabModalLabel" aria-hidden="true">
-        <div class="modal-dialog">
+      <!-- Write Prescription Modal -->
+      <div class="modal fade" id="writePrescriptionModal" tabindex="-1" aria-labelledby="writePrescriptionModalLabel" aria-hidden="true" data-bs-backdrop="static">
+        <div class="modal-dialog modal-lg">
           <div class="modal-content">
-            <form id="uploadLabForm">
+            <form id="writePrescriptionForm">
               <div class="modal-header bg-primary text-white">
-                <h5 class="modal-title" id="uploadLabModalLabel"><i class="fa-solid fa-flask-vial me-2"></i>Upload Lab Results</h5>
+                <h5 class="modal-title" id="writePrescriptionModalLabel"><i class="fa-solid fa-prescription-bottle-medical me-2"></i>Write Prescription</h5>
                 <button type="button" class="btn-close btn-close-white" data-bs-dismiss="modal" aria-label="Close"></button>
               </div>
               <div class="modal-body">
-                <div class="mb-3">
-                  <label for="labAppointmentSelect" class="form-label">Select Appointment</label>
-                  <select class="form-select" id="labAppointmentSelect" required></select>
+                <input type="hidden" id="prescriptionAppointmentId">
+                <input type="hidden" id="prescriptionPatientId">
+                <div class="row">
+                  <div class="col-md-6">
+                    <div class="mb-3">
+                      <label class="form-label">Patient</label>
+                      <div class="form-control-plaintext" id="prescriptionPatientName"></div>
+                    </div>
+                  </div>
                 </div>
-                <div class="mb-3">
-                  <label for="labFile" class="form-label">Lab Result File (PDF, Image)</label>
-                  <input type="file" class="form-control" id="labFile" accept=".pdf,image/*" required>
+                <div class="row">
+                  <div class="col-md-6">
+                    <div class="mb-3">
+                      <label for="prescriptionDiagnosis" class="form-label">Diagnosis *</label>
+                      <textarea class="form-control" id="prescriptionDiagnosis" rows="2" required placeholder="Enter diagnosis"></textarea>
+                    </div>
+                  </div>
+                  <div class="col-md-6">
+                    <div class="mb-3">
+                      <label for="prescriptionMedication" class="form-label">Medication *</label>
+                      <textarea class="form-control" id="prescriptionMedication" rows="2" required placeholder="Enter medication details"></textarea>
+                    </div>
+                  </div>
+                </div>
+                <div class="row">
+                  <div class="col-md-6">
+                    <div class="mb-3">
+                      <label for="prescriptionInstructions" class="form-label">Instructions</label>
+                      <textarea class="form-control" id="prescriptionInstructions" rows="2" placeholder="Enter dosage instructions"></textarea>
+                    </div>
+                  </div>
+                  <div class="col-md-6">
+                    <div class="mb-3">
+                      <label for="prescriptionDuration" class="form-label">Duration</label>
+                      <input type="text" class="form-control" id="prescriptionDuration" placeholder="e.g., 7 days, 2 weeks">
+                    </div>
+                  </div>
+                </div>
+                <div class="row">
+                  <div class="col-md-6">
+                    <div class="mb-3">
+                      <label for="prescriptionRefills" class="form-label">Refills</label>
+                      <input type="text" class="form-control" id="prescriptionRefills" placeholder="e.g., 2 refills">
+                    </div>
+                  </div>
+                  <div class="col-md-6">
+                    <div class="mb-3">
+                      <label for="prescriptionNotes" class="form-label">Notes</label>
+                      <textarea class="form-control" id="prescriptionNotes" rows="2" placeholder="Additional notes"></textarea>
+                    </div>
+                  </div>
                 </div>
               </div>
               <div class="modal-footer">
                 <button type="button" class="btn btn-secondary" data-bs-dismiss="modal">Cancel</button>
-                <button type="submit" class="btn btn-primary">Upload</button>
+                <button type="submit" class="btn btn-primary">Save Prescription</button>
+              </div>
+            </form>
+          </div>
+        </div>
+      </div>
+      <!-- Upload Lab Results Modal -->
+      <div class="modal fade" id="uploadLabModal" tabindex="-1" aria-labelledby="uploadLabModalLabel" aria-hidden="true">
+        <div class="modal-dialog modal-lg">
+          <div class="modal-content">
+            <form id="uploadLabForm">
+              <div class="modal-header bg-primary text-white">
+                <h5 class="modal-title" id="uploadLabModalLabel"><i class="fa-solid fa-flask me-2"></i>Upload Lab Results</h5>
+                <button type="button" class="btn-close btn-close-white" data-bs-dismiss="modal" aria-label="Close"></button>
+              </div>
+              <div class="modal-body">
+                <div class="mb-3">
+                  <label for="labPatient" class="form-label">Patient</label>
+                  <select class="form-select" id="labPatient" required>
+                    <option value="">Select patient</option>
+                  </select>
+                </div>
+                <div class="mb-3">
+                  <label for="labTestType" class="form-label">Test Type</label>
+                  <input type="text" class="form-control" id="labTestType" placeholder="e.g., Blood Test, Urine Analysis" required>
+                </div>
+                <div class="mb-3">
+                  <label for="labResults" class="form-label">Results</label>
+                  <textarea class="form-control" id="labResults" rows="4" placeholder="Enter lab results details..." required></textarea>
+                </div>
+                <div class="mb-3">
+                  <label for="labDate" class="form-label">Test Date</label>
+                  <input type="date" class="form-control" id="labDate" required>
+                </div>
+                <div class="mb-3">
+                  <label for="labFile" class="form-label">Upload File (Optional)</label>
+                  <input type="file" class="form-control" id="labFile" accept=".pdf,.doc,.docx,.jpg,.jpeg,.png">
+                  <div class="form-text">Supported formats: PDF, DOC, DOCX, JPG, PNG</div>
+                </div>
+              </div>
+              <div class="modal-footer">
+                <button type="button" class="btn btn-secondary" data-bs-dismiss="modal">Cancel</button>
+                <button type="submit" class="btn btn-primary">Upload Results</button>
               </div>
             </form>
           </div>
@@ -297,36 +430,104 @@
       if (calendarViewContainer.classList.contains('d-none')) {
         tableViewContainer.classList.add('d-none');
         calendarViewContainer.classList.remove('d-none');
+        calendarViewBtn.innerHTML = '<i class="fa-solid fa-table"></i> Table View';
         if (!doctorCalendar) renderDoctorCalendar();
       } else {
         calendarViewContainer.classList.add('d-none');
         tableViewContainer.classList.remove('d-none');
+        calendarViewBtn.innerHTML = '<i class="fa-solid fa-calendar-days"></i> Calendar View';
       }
     });
+
+    // Back to table view button
+    document.getElementById('backToTableViewBtn').addEventListener('click', function() {
+      calendarViewContainer.classList.add('d-none');
+      tableViewContainer.classList.remove('d-none');
+      calendarViewBtn.innerHTML = '<i class="fa-solid fa-calendar-days"></i> Calendar View';
+    });
     function renderDoctorCalendar() {
-      doctorCalendar = new FullCalendar.Calendar(document.getElementById('doctorCalendar'), {
+      const calendarEl = document.getElementById('doctorCalendar');
+      if (!calendarEl) return;
+      
+      doctorCalendar = new FullCalendar.Calendar(calendarEl, {
         initialView: 'dayGridMonth',
+        headerToolbar: {
+          left: 'prev,next today',
+          center: 'title',
+          right: 'dayGridMonth,timeGridWeek,timeGridDay'
+        },
         height: 'auto',
-        headerToolbar: { left: 'prev,next today', center: 'title', right: 'dayGridMonth,timeGridWeek,timeGridDay' },
-        events: fetchDoctorCalendarEvents,
+        themeSystem: 'bootstrap5',
+        dayMaxEvents: true,
         eventClick: function(info) {
-          // Open details modal for the clicked appointment
-          onViewAppointment({ currentTarget: { getAttribute: () => info.event.id } });
+          // Show appointment details when clicked
+          const appointmentId = info.event.id;
+          if (appointmentId) {
+            onViewAppointment({ currentTarget: { getAttribute: () => appointmentId } });
+          }
         },
         eventDidMount: function(info) {
-          // Color code by status
-          const status = info.event.extendedProps.status;
-          if (status === 'pending') info.el.style.backgroundColor = '#ffc107';
-          else if (status === 'approved') info.el.style.backgroundColor = '#198754';
-          else if (status === 'rejected') info.el.style.backgroundColor = '#dc3545';
-          else if (status === 'completed') info.el.style.backgroundColor = '#0dcaf0';
+          // Add tooltips to events
+          const event = info.event;
+          const status = event.extendedProps.status;
+          let color = '#6c757d'; // default gray
+          
+          switch(status) {
+            case 'pending': color = '#ffc107'; break; // warning yellow
+            case 'approved': color = '#198754'; break; // success green
+            case 'rejected': color = '#dc3545'; break; // danger red
+            case 'completed': color = '#0dcaf0'; break; // info blue
+          }
+          
+          info.el.style.backgroundColor = color;
+          info.el.style.borderColor = color;
+          
+          // Add tooltip
+          const tooltip = new bootstrap.Tooltip(info.el, {
+            title: `${event.title}\nStatus: ${status}\nTime: ${event.start.toLocaleTimeString()}`,
+            placement: 'top',
+            trigger: 'hover',
+            container: 'body'
+          });
         },
-        nowIndicator: true,
-        selectable: false,
-        editable: false,
-        aspectRatio: 1.5,
-        eventTimeFormat: { hour: '2-digit', minute: '2-digit', hour12: true }
+        events: async function(info, successCallback, failureCallback) {
+          try {
+            const start = info.start;
+            const end = info.end;
+            
+            const snapshot = await firebase.firestore().collection('appointments')
+              .where('doctorId', '==', currentDoctor.uid)
+              .where('date', '>=', firebase.firestore.Timestamp.fromDate(start))
+              .where('date', '<', firebase.firestore.Timestamp.fromDate(end))
+              .get();
+            
+            const events = [];
+            snapshot.forEach(doc => {
+              const data = doc.data();
+              const date = data.date ? (data.date.seconds ? new Date(data.date.toDate()) : new Date(data.date)) : new Date();
+              
+              events.push({
+                id: doc.id,
+                title: `${data.patient} - ${data.service}`,
+                start: date,
+                end: new Date(date.getTime() + 60 * 60 * 1000), // 1 hour duration
+                extendedProps: {
+                  patient: data.patient,
+                  service: data.service,
+                  status: data.status,
+                  notes: data.notes
+                }
+              });
+            });
+            
+            successCallback(events);
+          } catch (error) {
+            console.error('Error loading calendar events:', error);
+            failureCallback(error);
+          }
+        }
       });
+      
       doctorCalendar.render();
     }
     async function fetchDoctorCalendarEvents(fetchInfo, successCallback, failureCallback) {
@@ -352,23 +553,6 @@
         failureCallback(err);
       }
     }
-    const apptTbodyToday = document.getElementById('doctor-appointments-tbody-today');
-    const apptTbodyUpcoming = document.getElementById('doctor-appointments-tbody-upcoming');
-    const viewModal = new bootstrap.Modal(document.getElementById('viewAppointmentModal'));
-    const rejectModal = new bootstrap.Modal(document.getElementById('rejectAppointmentModal'));
-    const rejectForm = document.getElementById('rejectAppointmentForm');
-    const rejectIdInput = document.getElementById('rejectAppointmentId');
-    const rejectReasonInput = document.getElementById('rejectReason');
-    const statusFilterSelect = document.getElementById('statusFilter');
-    const searchInput = document.getElementById('searchInput');
-    const apptTabs = new bootstrap.Tab(document.getElementById('apptTabs'));
-    const selectAllApptsCheckbox = document.getElementById('selectAllAppts');
-    const bulkActionsBar = document.getElementById('bulkActionsBar');
-    const bulkApproveBtn = document.getElementById('bulkApproveBtn');
-    const bulkRejectBtn = document.getElementById('bulkRejectBtn');
-    const bulkCompleteBtn = document.getElementById('bulkCompleteBtn');
-    const bulkCountSpan = document.getElementById('bulkCount');
-
     function showDocApptToast(msg, isError = false) {
       const toastEl = isError ? document.getElementById('docApptErrorToast') : document.getElementById('docApptToast');
       const toastMsg = isError ? document.getElementById('docApptErrorToastMsg') : document.getElementById('docApptToastMsg');
@@ -387,19 +571,41 @@
     });
 
     async function loadDoctorAppointments() {
+      try {
+        if (!apptTbodyToday || !apptTbodyUpcoming) {
+          console.error('Appointment table elements not found');
+          return;
+        }
+        
+        console.log('Loading appointments for doctor:', currentDoctor.uid);
+        
       apptTbodyToday.innerHTML = '<tr><td colspan="6" class="text-center text-muted">Loading appointments...</td></tr>';
       apptTbodyUpcoming.innerHTML = '<tr><td colspan="6" class="text-center text-muted">Loading appointments...</td></tr>';
+        
       const now = new Date();
-      const todaySnap = await firebase.firestore().collection('appointments')
-        .where('doctorId','==',currentDoctor.uid)
-        .where('date','>=',firebase.firestore.Timestamp.fromDate(now))
-        .orderBy('date','asc')
-        .get();
-      const upcomingSnap = await firebase.firestore().collection('appointments')
-        .where('doctorId','==',currentDoctor.uid)
-        .where('date','>',firebase.firestore.Timestamp.fromDate(now))
-        .orderBy('date','asc')
-        .get();
+        
+        // First, let's check all appointments to see what's in the database
+        const allAppointments = await firebase.firestore().collection('appointments').get();
+        console.log('Total appointments in database:', allAppointments.size);
+        
+        allAppointments.forEach(doc => {
+          const data = doc.data();
+          console.log('Appointment:', {
+            id: doc.id,
+            doctorId: data.doctorId,
+            currentDoctorId: currentDoctor.uid,
+            patient: data.patient,
+            date: data.date,
+            status: data.status
+          });
+        });
+        
+        // TEMPORARY: Show all appointments for debugging
+        const todaySnap = await firebase.firestore().collection('appointments').get();
+        const upcomingSnap = await firebase.firestore().collection('appointments').get();
+
+        console.log('Today appointments found:', todaySnap.size);
+        console.log('Upcoming appointments found:', upcomingSnap.size);
 
       if (todaySnap.empty && upcomingSnap.empty) {
         apptTbodyToday.innerHTML = '<tr><td colspan="6" class="text-center text-muted">No appointments found.</td></tr>';
@@ -410,9 +616,31 @@
       apptTbodyToday.innerHTML = '';
       apptTbodyUpcoming.innerHTML = '';
 
+        // Filter appointments by date after fetching
+        const todayAppointments = [];
+        const upcomingAppointments = [];
+
       todaySnap.forEach(doc => {
         const data = doc.data();
         const date = data.date ? (data.date.seconds ? new Date(data.date.toDate()) : new Date(data.date)) : '';
+          if (date && date >= now) {
+            todayAppointments.push({ doc, data, date });
+          }
+        });
+
+        upcomingSnap.forEach(doc => {
+          const data = doc.data();
+          const date = data.date ? (data.date.seconds ? new Date(data.date.toDate()) : new Date(data.date)) : '';
+          if (date && date > now) {
+            upcomingAppointments.push({ doc, data, date });
+          }
+        });
+
+        // Sort appointments by date
+        todayAppointments.sort((a, b) => a.date - b.date);
+        upcomingAppointments.sort((a, b) => a.date - b.date);
+
+        todayAppointments.forEach(({ doc, data, date }) => {
         if (date && date < now) return; // Only show today/future
         const dateStr = date ? date.toLocaleString() : '';
         const patient = data.patient || '';
@@ -439,16 +667,18 @@
           <td><span class="badge bg-${statusClass} text-capitalize">${status}</span>${status==='rejected'&&reason?`<br><small class='text-danger'>${reason}</small>`:''}</td>
           <td>${notes}</td>
           <td>
-            <button class='btn btn-sm btn-outline-info me-1 view-appt-btn' data-id='${doc.id}'><i class='fa-solid fa-eye'></i></button>
-            ${status==='pending'?`<button class='btn btn-sm btn-outline-success me-1 approve-appt-btn' data-id='${doc.id}'><i class='fa-solid fa-check'></i></button>`:''}
-            ${status==='pending'?`<button class='btn btn-sm btn-outline-danger reject-appt-btn' data-id='${doc.id}'><i class='fa-solid fa-xmark'></i></button>`:''}
+              <div class="action-buttons">
+                <button class='btn btn-sm btn-outline-info view-appt-btn' data-id='${doc.id}' title="View Details"><i class='fa-solid fa-eye'></i></button>
+                ${status==='pending'?`<button class='btn btn-sm btn-outline-success approve-appt-btn' data-id='${doc.id}' title="Approve"><i class='fa-solid fa-check'></i></button>`:''}
+                ${status==='pending'?`<button class='btn btn-sm btn-outline-danger reject-appt-btn' data-id='${doc.id}' title="Reject"><i class='fa-solid fa-xmark'></i></button>`:''}
+                ${status==='approved'?`<button class='btn btn-sm btn-outline-info complete-appt-btn' data-id='${doc.id}' title="Mark Complete"><i class='fa-solid fa-check-double'></i></button>`:''}
+                <button class='btn btn-sm btn-outline-primary write-prescription-btn' data-id='${doc.id}' title="Write Prescription"><i class='fa-solid fa-prescription-bottle-medical'></i></button>
+              </div>
           </td>
         </tr>`;
       });
 
-      upcomingSnap.forEach(doc => {
-        const data = doc.data();
-        const date = data.date ? (data.date.seconds ? new Date(data.date.toDate()) : new Date(data.date)) : '';
+        upcomingAppointments.forEach(({ doc, data, date }) => {
         if (date && date < now) return; // Only show today/future
         const dateStr = date ? date.toLocaleString() : '';
         const patient = data.patient || '';
@@ -474,9 +704,13 @@
           <td><span class="badge bg-${statusClass} text-capitalize">${status}</span>${status==='rejected'&&reason?`<br><small class='text-danger'>${reason}</small>`:''}</td>
           <td>${notes}</td>
           <td>
-            <button class='btn btn-sm btn-outline-info me-1 view-appt-btn' data-id='${doc.id}'><i class='fa-solid fa-eye'></i></button>
-            ${status==='pending'?`<button class='btn btn-sm btn-outline-success me-1 approve-appt-btn' data-id='${doc.id}'><i class='fa-solid fa-check'></i></button>`:''}
-            ${status==='pending'?`<button class='btn btn-sm btn-outline-danger reject-appt-btn' data-id='${doc.id}'><i class='fa-solid fa-xmark'></i></button>`:''}
+              <div class="action-buttons">
+                <button class='btn btn-sm btn-outline-info view-appt-btn' data-id='${doc.id}' title="View Details"><i class='fa-solid fa-eye'></i></button>
+                ${status==='pending'?`<button class='btn btn-sm btn-outline-success approve-appt-btn' data-id='${doc.id}' title="Approve"><i class='fa-solid fa-check'></i></button>`:''}
+                ${status==='pending'?`<button class='btn btn-sm btn-outline-danger reject-appt-btn' data-id='${doc.id}' title="Reject"><i class='fa-solid fa-xmark'></i></button>`:''}
+                ${status==='approved'?`<button class='btn btn-sm btn-outline-info complete-appt-btn' data-id='${doc.id}' title="Mark Complete"><i class='fa-solid fa-check-double'></i></button>`:''}
+                <button class='btn btn-sm btn-outline-primary write-prescription-btn' data-id='${doc.id}' title="Write Prescription"><i class='fa-solid fa-prescription-bottle-medical'></i></button>
+              </div>
           </td>
         </tr>`;
       });
@@ -491,10 +725,18 @@
       document.querySelectorAll('.reject-appt-btn').forEach(btn=>{
         btn.onclick = onRejectAppointment;
       });
-      // Check/Uncheck select all checkbox
-      const apptCheckboxes = document.querySelectorAll('.appt-checkbox');
-      selectAllApptsCheckbox.checked = apptCheckboxes.length > 0 && apptCheckboxes.every(cb => cb.checked);
-    }
+        document.querySelectorAll('.write-prescription-btn').forEach(btn=>{
+          btn.onclick = onWritePrescription;
+        });
+        document.querySelectorAll('.complete-appt-btn').forEach(btn=>{
+          btn.onclick = onCompleteAppointment;
+        });
+      } catch (err) {
+        console.error('Error loading appointments:', err);
+        if (apptTbodyToday) apptTbodyToday.innerHTML = '<tr><td colspan="6" class="text-center text-danger">Error loading appointments</td></tr>';
+        if (apptTbodyUpcoming) apptTbodyUpcoming.innerHTML = '<tr><td colspan="6" class="text-center text-danger">Error loading appointments</td></tr>';
+      }
+    };
 
     async function onViewAppointment(e) {
       const apptId = e.currentTarget.getAttribute('data-id');
@@ -510,7 +752,19 @@
       if (data.patientEmail) html += `<div class='mb-2'><strong>Email:</strong> ${data.patientEmail}</div>`;
       if (data.patientPhone) html += `<div class='mb-2'><strong>Phone:</strong> ${data.patientPhone}</div>`;
       document.getElementById('viewAppointmentBody').innerHTML = html;
+      
+      // Close any existing modals first
+      const existingModal = bootstrap.Modal.getInstance(document.getElementById('viewAppointmentModal'));
+      if (existingModal) {
+        existingModal.hide();
+        setTimeout(() => {
+          const newModal = new bootstrap.Modal(document.getElementById('viewAppointmentModal'));
+          newModal.show();
+        }, 150);
+      } else {
+        const viewModal = new bootstrap.Modal(document.getElementById('viewAppointmentModal'));
       viewModal.show();
+      }
     }
     async function onApproveAppointment(e) {
       const apptId = e.currentTarget.getAttribute('data-id');
@@ -528,6 +782,107 @@
       rejectReasonInput.value = '';
       rejectModal.show();
     }
+    
+    async function onCompleteAppointment(e) {
+      const apptId = e.currentTarget.getAttribute('data-id');
+      try {
+        await firebase.firestore().collection('appointments').doc(apptId).update({ status: 'completed' });
+        showDocApptToast('Appointment marked as completed!');
+        loadDoctorAppointments();
+      } catch (err) {
+        showDocApptToast(err.message||'Error completing appointment.', true);
+      }
+    }
+    
+    async function onWritePrescription(e) {
+      const apptId = e.currentTarget.getAttribute('data-id');
+      const doc = await firebase.firestore().collection('appointments').doc(apptId).get();
+      if (!doc.exists) return;
+      const data = doc.data();
+      
+      // Set appointment data in the prescription modal
+      document.getElementById('prescriptionAppointmentId').value = apptId;
+      document.getElementById('prescriptionPatientName').textContent = data.patient || '';
+      document.getElementById('prescriptionPatientId').value = data.userId || '';
+      
+      // Reset form
+      document.getElementById('prescriptionDiagnosis').value = '';
+      document.getElementById('prescriptionMedication').value = '';
+      document.getElementById('prescriptionInstructions').value = '';
+      document.getElementById('prescriptionDuration').value = '';
+      document.getElementById('prescriptionRefills').value = '';
+      document.getElementById('prescriptionNotes').value = '';
+      
+      // Show the prescription modal
+      const existingPrescriptionModal = bootstrap.Modal.getInstance(document.getElementById('writePrescriptionModal'));
+      if (existingPrescriptionModal) {
+        existingPrescriptionModal.hide();
+        setTimeout(() => {
+          const prescriptionModal = new bootstrap.Modal(document.getElementById('writePrescriptionModal'));
+          prescriptionModal.show();
+        }, 150);
+      } else {
+        const prescriptionModal = new bootstrap.Modal(document.getElementById('writePrescriptionModal'));
+        prescriptionModal.show();
+      }
+    }
+    
+    // Handle prescription form submission
+    document.getElementById('writePrescriptionForm').onsubmit = async function(e) {
+      e.preventDefault();
+      
+      const appointmentId = document.getElementById('prescriptionAppointmentId').value;
+      const patientId = document.getElementById('prescriptionPatientId').value;
+      const diagnosis = document.getElementById('prescriptionDiagnosis').value.trim();
+      const medication = document.getElementById('prescriptionMedication').value.trim();
+      const instructions = document.getElementById('prescriptionInstructions').value.trim();
+      const duration = document.getElementById('prescriptionDuration').value.trim();
+      const refills = document.getElementById('prescriptionRefills').value.trim();
+      const notes = document.getElementById('prescriptionNotes').value.trim();
+      
+      if (!diagnosis || !medication) {
+        showDocApptToast('Please fill in diagnosis and medication.', true);
+        return;
+      }
+      
+      try {
+        await firebase.firestore().collection('prescriptions').add({
+          appointmentId: appointmentId,
+          patientId: patientId,
+          doctorId: currentDoctor.uid,
+          diagnosis: diagnosis,
+          medication: medication,
+          instructions: instructions,
+          duration: duration,
+          refills: refills,
+          notes: notes,
+          createdAt: firebase.firestore.FieldValue.serverTimestamp()
+        });
+        
+        // Create notification for the patient
+        try {
+          await firebase.firestore().collection('notifications').add({
+            patientId: patientId,
+            title: 'New Prescription Available',
+            message: `Dr. ${currentDoctor.displayName || currentDoctor.email} has written you a prescription`,
+            type: 'prescription',
+            read: false,
+            createdAt: firebase.firestore.FieldValue.serverTimestamp()
+          });
+        } catch (err) {
+          console.error('Error creating patient notification:', err);
+        }
+        
+        showDocApptToast('Prescription saved successfully!');
+        
+        // Hide the modal
+        const prescriptionModal = bootstrap.Modal.getInstance(document.getElementById('writePrescriptionModal'));
+        prescriptionModal.hide();
+        
+      } catch (err) {
+        showDocApptToast('Failed to save prescription: ' + err.message, true);
+      }
+    };
     rejectForm.onsubmit = async function(e) {
       e.preventDefault();
       const apptId = rejectIdInput.value;
@@ -550,26 +905,48 @@
       const upcomingRows = Array.from(apptTbodyUpcoming.children);
 
       todayRows.forEach(row => {
-        const patientText = row.cells[2].textContent.toLowerCase(); // Patient is at index 2
-        const serviceText = row.cells[3].textContent.toLowerCase(); // Service is at index 3
-        const statusText = row.cells[4].textContent.toLowerCase(); // Status is at index 4
+        // Add null checks for cells
+        if (!row.cells || row.cells.length < 5) return;
+        
+        const patientCell = row.cells[2];
+        const serviceCell = row.cells[3];
+        const statusCell = row.cells[4];
+        
+        if (!patientCell || !serviceCell || !statusCell) return;
+        
+        const patientText = patientCell.textContent.toLowerCase(); // Patient is at index 2
+        const serviceText = serviceCell.textContent.toLowerCase(); // Service is at index 3
+        const statusText = statusCell.textContent.toLowerCase(); // Status is at index 4
         const isVisible = (selectedStatus === '' || statusText.includes(selectedStatus)) &&
                           (patientText.includes(searchTerm) || serviceText.includes(searchTerm));
         row.style.display = isVisible ? '' : 'none';
       });
 
       upcomingRows.forEach(row => {
-        const patientText = row.cells[1].textContent.toLowerCase(); // Patient is at index 1
-        const serviceText = row.cells[2].textContent.toLowerCase(); // Service is at index 2
-        const statusText = row.cells[3].textContent.toLowerCase(); // Status is at index 3
+        // Add null checks for cells
+        if (!row.cells || row.cells.length < 4) return;
+        
+        const patientCell = row.cells[1];
+        const serviceCell = row.cells[2];
+        const statusCell = row.cells[3];
+        
+        if (!patientCell || !serviceCell || !statusCell) return;
+        
+        const patientText = patientCell.textContent.toLowerCase(); // Patient is at index 1
+        const serviceText = serviceCell.textContent.toLowerCase(); // Service is at index 2
+        const statusText = statusCell.textContent.toLowerCase(); // Status is at index 3
         const isVisible = (selectedStatus === '' || statusText.includes(selectedStatus)) &&
                           (patientText.includes(searchTerm) || serviceText.includes(searchTerm));
         row.style.display = isVisible ? '' : 'none';
       });
     }
 
+    if (statusFilterSelect) {
     statusFilterSelect.addEventListener('change', applyFiltersAndSearch);
+    }
+    if (searchInput) {
     searchInput.addEventListener('input', applyFiltersAndSearch);
+    }
 
     // Initial load and tab logic
     loadDoctorAppointments();
@@ -683,41 +1060,68 @@
     const uploadLabBtn = document.getElementById('uploadLabBtn');
     const uploadLabModal = new bootstrap.Modal(document.getElementById('uploadLabModal'));
     const uploadLabForm = document.getElementById('uploadLabForm');
-    const labAppointmentSelect = document.getElementById('labAppointmentSelect');
+    const labPatientSelect = document.getElementById('labPatient');
+    const labTestTypeInput = document.getElementById('labTestType');
+    const labResultsTextarea = document.getElementById('labResults');
+    const labDateInput = document.getElementById('labDate');
     const labFileInput = document.getElementById('labFile');
     const exportCsvBtn = document.getElementById('exportCsvBtn');
 
+    // Populate patient dropdown for lab results
+    async function populateLabPatientDropdown() {
+      labPatientSelect.innerHTML = '<option value="">Loading patients...</option>';
+      try {
+        const snap = await firebase.firestore().collection('patients').where('doctorId', '==', currentDoctor.uid).get();
+        let options = '<option value="">Select patient</option>';
+      snap.forEach(doc => {
+          const data = doc.data();
+          options += `<option value="${doc.id}">${data.firstName} ${data.lastName} (${data.phone})</option>`;
+        });
+        labPatientSelect.innerHTML = options;
+      } catch (err) {
+        console.error('Error populating patient dropdown:', err);
+        labPatientSelect.innerHTML = '<option value="">Error loading patients</option>';
+      }
+    }
+
     // Upload Lab Results logic
     uploadLabBtn.onclick = async function() {
-      // Populate appointment dropdown with approved or completed appointments
-      labAppointmentSelect.innerHTML = '<option value="">Loading...</option>';
-      const snap = await firebase.firestore().collection('appointments')
-        .where('doctorId','==',currentDoctor.uid)
-        .where('status','in',['approved','completed'])
-        .orderBy('date','desc').get();
-      let options = '<option value="">Select appointment</option>';
-      snap.forEach(doc => {
-        const d = doc.data();
-        const date = d.date ? (d.date.seconds ? new Date(d.date.toDate()) : new Date(d.date)) : '';
-        options += `<option value="${doc.id}">${d.patient} - ${d.service||''} (${date?date.toLocaleString():''})</option>`;
-      });
-      labAppointmentSelect.innerHTML = options;
+      await populateLabPatientDropdown(); // Populate patient dropdown
       uploadLabForm.reset();
       uploadLabModal.show();
     };
     uploadLabForm.onsubmit = async function(e) {
       e.preventDefault();
-      const apptId = labAppointmentSelect.value;
+      const patientId = labPatientSelect.value;
+      const testType = labTestTypeInput.value;
+      const results = labResultsTextarea.value;
+      const testDate = labDateInput.value;
       const file = labFileInput.files[0];
-      if (!apptId || !file) return;
+
+      if (!patientId || !testType || !testDate) {
+        showDocApptToast('Please select a patient, test type, and test date.', true);
+        return;
+      }
+
       try {
-        const storageRef = firebase.storage().ref(`labResults/${apptId}/${file.name}`);
-        await storageRef.put(file);
-        const fileUrl = await storageRef.getDownloadURL();
-        await firebase.firestore().collection('appointments').doc(apptId).update({ labResultUrl: fileUrl, labResultFileName: file.name });
+        const labResultRef = firebase.storage().ref(`labResults/${patientId}/${testType}-${testDate}.pdf`); // Assuming PDF for now
+        if (file) {
+          await labResultRef.put(file);
+        }
+        const fileUrl = file ? await labResultRef.getDownloadURL() : null;
+
+        await firebase.firestore().collection('labResults').add({
+          patientId: patientId,
+          testType: testType,
+          results: results,
+          testDate: firebase.firestore.Timestamp.fromDate(new Date(testDate)),
+          fileUrl: fileUrl,
+          createdAt: firebase.firestore.FieldValue.serverTimestamp()
+        });
+
         showDocApptToast('Lab result uploaded!');
         uploadLabModal.hide();
-        loadDoctorAppointments();
+        loadDoctorAppointments(); // Refresh appointments to show new lab result
       } catch (err) {
         showDocApptToast(err.message||'Error uploading lab result.', true);
       }
@@ -739,20 +1143,25 @@
         showDocApptToast('No appointments to export.', true);
         return;
       }
-      const headers = ['Date/Time','Patient','Service','Status','Notes'];
-      let csv = headers.join(',') + '\n';
-      rows.forEach(r => {
-        csv += r.slice(1,6).map(v => '"'+v.replace(/"/g,'""')+'"').join(',') + '\n';
-      });
-      const blob = new Blob([csv], { type: 'text/csv' });
+      
+      // Create CSV content with headers
+      const headers = ['Date', 'Patient', 'Service', 'Status', 'Notes'];
+      const csvContent = [
+        headers.join(','),
+        ...rows.map(row => row.slice(0, 5).map(cell => `"${cell.replace(/"/g, '""')}"`).join(','))
+      ].join('\n');
+      
+      // Download CSV file
+      const blob = new Blob([csvContent], { type: 'text/csv;charset=utf-8;' });
+      const link = document.createElement('a');
       const url = URL.createObjectURL(blob);
-      const a = document.createElement('a');
-      a.href = url;
-      a.download = 'appointments.csv';
-      document.body.appendChild(a);
-      a.click();
-      document.body.removeChild(a);
-      URL.revokeObjectURL(url);
+      link.setAttribute('href', url);
+      link.setAttribute('download', `appointments_${new Date().toISOString().split('T')[0]}.csv`);
+      link.style.visibility = 'hidden';
+      document.body.appendChild(link);
+      link.click();
+      document.body.removeChild(link);
+      showDocApptToast('Appointments exported successfully!');
     };
   </script>
 </body>
