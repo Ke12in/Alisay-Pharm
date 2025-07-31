@@ -1,0 +1,373 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  <title>Doctor Profile - Alisay Medical Center</title>
+  <link href="https://cdn.jsdelivr.net/npm/bootstrap@5.3.2/dist/css/bootstrap.min.css" rel="stylesheet">
+  <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.4.0/css/all.min.css">
+  <style>
+    html, body { height: 100%; }
+    body {
+      min-height: 100vh;
+      height: 100%;
+      background: linear-gradient(135deg, #e0eafc 0%, #cfdef3 100%);
+      display: flex;
+      flex-direction: column;
+    }
+    .dashboard-container {
+      display: flex;
+      min-height: 100vh;
+    }
+    .sidebar {
+      min-width: 220px;
+      max-width: 220px;
+      background: #1a237e;
+      color: #fff;
+      display: flex;
+      flex-direction: column;
+      padding: 2rem 1rem 1rem 1rem;
+      box-shadow: 2px 0 8px rgba(31,38,135,0.08);
+    }
+    .sidebar .nav-link {
+      color: #fff;
+      font-weight: 500;
+      margin-bottom: 1rem;
+      border-radius: 0.5rem;
+      transition: background 0.2s;
+    }
+    .sidebar .nav-link.active, .sidebar .nav-link:hover {
+      background: #3949ab;
+      color: #fff;
+    }
+    .sidebar .sidebar-logo {
+      font-size: 1.5rem;
+      font-weight: bold;
+      margin-bottom: 2rem;
+      text-align: center;
+      letter-spacing: 1px;
+    }
+    .main-content {
+      flex: 1 1 auto;
+      padding: 0;
+      display: flex;
+      flex-direction: column;
+      min-width: 0;
+    }
+    .topbar {
+      background: #fff;
+      box-shadow: 0 2px 8px rgba(31,38,135,0.06);
+      padding: 1rem 2rem;
+      display: flex;
+      align-items: center;
+      justify-content: flex-end;
+      min-height: 64px;
+    }
+    .topbar .profile {
+      display: flex;
+      align-items: center;
+      gap: 0.75rem;
+      cursor: pointer;
+    }
+    .topbar .profile-img {
+      width: 40px;
+      height: 40px;
+      border-radius: 50%;
+      object-fit: cover;
+      background: #e3e3e3;
+      display: flex;
+      align-items: center;
+      justify-content: center;
+      font-size: 1.5rem;
+      color: #3949ab;
+    }
+    .content-area {
+      flex: 1 1 auto;
+      padding: 2rem;
+      background: transparent;
+      min-height: 0;
+    }
+    .sidebar-mobile-overlay {
+      display: none;
+      position: fixed;
+      top: 0; left: 0; right: 0; bottom: 0;
+      background: rgba(0,0,0,0.3);
+      z-index: 1999;
+    }
+    .sidebar-mobile-overlay.active {
+      display: block;
+    }
+    .sidebar-mobile {
+      position: fixed;
+      top: 0;
+      left: 0;
+      width: 220px;
+      height: 100vh;
+      background: #1a237e;
+      color: #fff;
+      display: flex;
+      flex-direction: column;
+      padding: 2rem 1rem 1rem 1rem;
+      box-shadow: 2px 0 8px rgba(31,38,135,0.08);
+      z-index: 2000;
+      transition: transform 0.3s ease;
+      transform: translateX(-100%);
+    }
+    .sidebar-mobile.show {
+      transform: translateX(0);
+    }
+    .sidebar-toggle-btn {
+      display: none;
+    }
+    @media (max-width: 991.98px) {
+      .dashboard-container {
+        flex-direction: column;
+      }
+      .sidebar {
+        display: none !important;
+      }
+      .sidebar-toggle-btn {
+        display: inline-block !important;
+        position: fixed;
+        top: 16px;
+        left: 16px;
+        z-index: 2100;
+      }
+      .sidebar-mobile {
+        display: flex;
+      }
+      .sidebar .nav {
+        flex-direction: row;
+        width: 100%;
+        justify-content: space-around;
+      }
+      .sidebar .sidebar-logo {
+        display: none;
+      }
+    }
+    @media (min-width: 992px) {
+      .sidebar-mobile, .sidebar-mobile-overlay, .sidebar-toggle-btn {
+        display: none !important;
+      }
+    }
+  </style>
+</head>
+<body>
+  <div class="dashboard-container">
+    <aside class="sidebar">
+      <div class="sidebar-logo">
+        <i class="fa-solid fa-hospital"></i> Alisay Doctor
+      </div>
+      <nav class="nav flex-column">
+        <a class="nav-link" href="dashboard-doctor.html"><i class="fa-solid fa-chart-line me-2"></i>Dashboard</a>
+        <a class="nav-link active" href="doctor-profile.html"><i class="fa-solid fa-user-md me-2"></i>Profile</a>
+        <a class="nav-link text-danger" href="#" onclick="logout()"><i class="fa-solid fa-sign-out-alt me-2"></i>Logout</a>
+      </nav>
+    </aside>
+    <div class="sidebar-mobile" id="sidebarMobile">
+      <div class="sidebar-logo mb-4">
+        <i class="fa-solid fa-hospital"></i> Alisay Doctor
+      </div>
+      <nav class="nav flex-column">
+        <a class="nav-link" href="dashboard-doctor.html"><i class="fa-solid fa-chart-line me-2"></i>Dashboard</a>
+        <a class="nav-link active" href="doctor-profile.html"><i class="fa-solid fa-user-md me-2"></i>Profile</a>
+        <a class="nav-link text-danger" href="#" onclick="logout()"><i class="fa-solid fa-sign-out-alt me-2"></i>Logout</a>
+      </nav>
+    </div>
+    <div class="sidebar-mobile-overlay" id="sidebarMobileOverlay"></div>
+    <button class="btn btn-primary sidebar-toggle-btn d-lg-none" id="sidebarToggleBtn" title="Open menu"><i class="fa-solid fa-bars"></i></button>
+    <div class="main-content">
+      <div class="topbar">
+        <div class="profile" id="doctor-profile-link">
+          <span id="doctor-name" class="fw-bold text-primary">Doctor</span>
+        </div>
+      </div>
+      <div class="content-area">
+        <div class="card p-4 mb-4" id="profile">
+          <div class="d-flex align-items-center mb-3">
+            <a href="dashboard-doctor.html" class="btn btn-outline-secondary btn-sm me-2"><i class="fa fa-arrow-left me-1"></i>Back</a>
+            <h4 class="mb-0">Doctor Profile</h4>
+          </div>
+          <div class="mb-3">
+            <label class="form-label">Name</label>
+            <input type="text" class="form-control" id="profile-name" value="Doctor" placeholder="Enter your name" title="Name">
+          </div>
+          <div class="mb-3">
+            <label class="form-label">Email</label>
+            <input type="email" class="form-control" id="profile-email" value="doctor@example.com" placeholder="Enter your email" title="Email">
+          </div>
+          <div class="mb-3">
+            <label class="form-label">Phone</label>
+            <input type="tel" class="form-control" id="profile-phone" value="" placeholder="Enter your phone number" title="Phone">
+          </div>
+          <div class="mb-3">
+            <label class="form-label">Specialization</label>
+            <input type="text" class="form-control" id="profile-specialization" value="" placeholder="Enter your specialization" title="Specialization">
+          </div>
+          <button type="button" class="btn btn-success mb-3" id="save-profile-btn">Save Changes</button>
+        </div>
+        <div class="card p-4 mb-4">
+          <h5 class="mb-3">Change Password</h5>
+          <form id="change-password-form">
+            <div class="mb-3">
+              <label for="current-password" class="form-label">Current Password</label>
+              <input type="password" class="form-control" id="current-password" required>
+            </div>
+            <div class="mb-3">
+              <label for="new-password" class="form-label">New Password</label>
+              <input type="password" class="form-control" id="new-password" required>
+            </div>
+            <div class="mb-3">
+              <label for="confirm-password" class="form-label">Confirm New Password</label>
+              <input type="password" class="form-control" id="confirm-password" required>
+            </div>
+            <button type="submit" class="btn btn-primary">Change Password</button>
+          </form>
+        </div>
+        <!-- Toast Container -->
+        <div class="position-fixed bottom-0 end-0 p-3" style="z-index: 1100">
+          <div id="doctor-toast" class="toast align-items-center text-bg-primary border-0" role="alert" aria-live="assertive" aria-atomic="true">
+            <div class="d-flex">
+              <div class="toast-body" id="doctor-toast-body"></div>
+              <button type="button" class="btn-close btn-close-white me-2 m-auto" data-bs-dismiss="toast" aria-label="Close"></button>
+            </div>
+          </div>
+        </div>
+      </div>
+    </div>
+  </div>
+  <footer class="text-center py-3 bg-light mt-4 shadow-sm">
+    <p class="mb-0">&copy; 2025 Alisay Medical Center</p>
+  </footer>
+  <script src="https://cdn.jsdelivr.net/npm/bootstrap@5.3.2/dist/js/bootstrap.bundle.min.js"></script>
+  <script src="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.4.0/js/all.min.js"></script>
+  <script src="https://www.gstatic.com/firebasejs/9.22.2/firebase-app-compat.js"></script>
+  <script src="https://www.gstatic.com/firebasejs/9.22.2/firebase-auth-compat.js"></script>
+  <script src="https://www.gstatic.com/firebasejs/9.22.2/firebase-firestore-compat.js"></script>
+  <script src="assets/js/main.js"></script>
+  <script src="assets/js/auth.js"></script>
+  <script>
+    function logout() {
+      firebase.auth().signOut().then(() => {
+        window.location.href = 'login.html';
+      });
+    }
+    
+    // Mobile sidebar toggle logic
+    const sidebarMobile = document.getElementById('sidebarMobile');
+    const sidebarMobileOverlay = document.getElementById('sidebarMobileOverlay');
+    const sidebarToggleBtn = document.getElementById('sidebarToggleBtn');
+    function toggleSidebarMobile() {
+      if (sidebarMobile.classList.contains('show')) {
+        sidebarMobile.classList.remove('show');
+        sidebarMobileOverlay.classList.remove('active');
+      } else {
+        sidebarMobile.classList.add('show');
+        sidebarMobileOverlay.classList.add('active');
+      }
+    }
+    sidebarToggleBtn.addEventListener('click', toggleSidebarMobile);
+    sidebarMobileOverlay.addEventListener('click', toggleSidebarMobile);
+    sidebarMobile.querySelectorAll('a.nav-link').forEach(link => {
+      link.addEventListener('click', () => {
+        sidebarMobile.classList.remove('show');
+        sidebarMobileOverlay.classList.remove('active');
+      });
+    });
+
+    // Doctor Profile Management
+    let currentDoctor = null;
+    let currentProfileData = {};
+
+    // Toast helper
+    function showDoctorToast(message, type = 'primary') {
+      const toast = document.getElementById('doctor-toast');
+      const toastBody = document.getElementById('doctor-toast-body');
+      toast.className = `toast align-items-center text-bg-${type} border-0`;
+      toastBody.textContent = message;
+      const bsToast = new bootstrap.Toast(toast);
+      bsToast.show();
+    }
+
+    // Load doctor profile
+    firebase.auth().onAuthStateChanged(async function(user) {
+      if (user) {
+        currentDoctor = user;
+        const userDoc = await firebase.firestore().collection('users').doc(user.uid).get();
+        if (userDoc.exists && userDoc.data().role === 'doctor') {
+          const data = userDoc.data();
+          currentProfileData = data;
+          
+          document.getElementById('profile-name').value = data.name || 'Doctor';
+          document.getElementById('profile-email').value = data.email || user.email;
+          document.getElementById('profile-phone').value = data.phone || '';
+          document.getElementById('profile-specialization').value = data.specialization || '';
+          document.getElementById('doctor-name').textContent = data.name || 'Doctor';
+        }
+      } else {
+        window.location.href = 'login.html';
+      }
+    });
+
+    // Save profile changes
+    document.getElementById('save-profile-btn').onclick = async function() {
+      const name = document.getElementById('profile-name').value.trim();
+      const email = document.getElementById('profile-email').value.trim();
+      const phone = document.getElementById('profile-phone').value.trim();
+      const specialization = document.getElementById('profile-specialization').value.trim();
+
+      if (!name || !email) {
+        showDoctorToast('Please fill in name and email.', 'danger');
+        return;
+      }
+
+      try {
+        const updates = {};
+        if (name !== currentProfileData.name) updates.name = name;
+        if (email !== currentProfileData.email) updates.email = email;
+        if (phone !== currentProfileData.phone) updates.phone = phone;
+        if (specialization !== currentProfileData.specialization) updates.specialization = specialization;
+
+        if (Object.keys(updates).length > 0) {
+          await firebase.firestore().collection('users').doc(currentDoctor.uid).update(updates);
+          showDoctorToast('Profile updated successfully!', 'success');
+          currentProfileData = { ...currentProfileData, ...updates };
+          document.getElementById('doctor-name').textContent = updates.name || currentProfileData.name;
+        } else {
+          showDoctorToast('No changes to save.', 'info');
+        }
+      } catch (err) {
+        showDoctorToast('Failed to update profile: ' + err.message, 'danger');
+      }
+    };
+
+    // Change password
+    document.getElementById('change-password-form').addEventListener('submit', async function(e) {
+      e.preventDefault();
+      const currentPassword = document.getElementById('current-password').value;
+      const newPassword = document.getElementById('new-password').value;
+      const confirmPassword = document.getElementById('confirm-password').value;
+
+      if (newPassword !== confirmPassword) {
+        showDoctorToast('New passwords do not match.', 'danger');
+        return;
+      }
+
+      if (newPassword.length < 6) {
+        showDoctorToast('Password must be at least 6 characters.', 'danger');
+        return;
+      }
+
+      try {
+        const credential = firebase.auth.EmailAuthProvider.credential(currentDoctor.email, currentPassword);
+        await currentDoctor.reauthenticateWithCredential(credential);
+        await currentDoctor.updatePassword(newPassword);
+        document.getElementById('change-password-form').reset();
+        showDoctorToast('Password changed successfully!', 'success');
+      } catch (err) {
+        showDoctorToast('Failed to change password: ' + err.message, 'danger');
+      }
+    });
+  </script>
+</body>
+</html> 

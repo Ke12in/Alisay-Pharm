@@ -76,13 +76,14 @@
                 <tr>
                   <th>Date</th>
                   <th>Doctor</th>
-                  <th>Medicines</th>
-                  <th>Notes</th>
-                  <th></th>
+                  <th>Diagnosis</th>
+                  <th>Medication</th>
+                  <th>Status</th>
+                  <th>Actions</th>
                 </tr>
               </thead>
               <tbody id="prescriptions-table-body">
-                <tr><td colspan="5" class="text-center text-muted">Loading prescriptions...</td></tr>
+                <tr><td colspan="6" class="text-center text-muted">Loading prescriptions...</td></tr>
               </tbody>
             </table>
           </div>
@@ -141,33 +142,35 @@
    });
    function loadPrescriptions() {
      const tbody = document.getElementById('prescriptions-table-body');
-     tbody.innerHTML = '<tr><td colspan="5" class="text-center text-muted">Loading prescriptions...</td></tr>';
+     tbody.innerHTML = '<tr><td colspan="6" class="text-center text-muted">Loading prescriptions...</td></tr>';
      firebase.firestore().collection('prescriptions')
-       .where('userId', '==', currentUser.uid)
-       .orderBy('date', 'desc')
+       .where('patientId', '==', currentUser.uid)
+       .orderBy('createdAt', 'desc')
        .get()
        .then(snapshot => {
          if (snapshot.empty) {
-           tbody.innerHTML = '<tr><td colspan="5" class="text-center text-muted">No prescriptions found.</td></tr>';
+           tbody.innerHTML = '<tr><td colspan="6" class="text-center text-muted">No prescriptions found.</td></tr>';
          } else {
            tbody.innerHTML = '';
            snapshot.forEach(doc => {
              const data = doc.data();
-             const date = data.date ? (data.date.seconds ? new Date(data.date.toDate()) : new Date(data.date)) : '';
+             const date = data.createdAt ? (data.createdAt.seconds ? new Date(data.createdAt.toDate()) : new Date(data.createdAt)) : '';
              const dateStr = date ? date.toLocaleString() : '';
              const doctor = data.doctor || '';
-             const medicines = Array.isArray(data.medicines) ? data.medicines.join(', ') : (data.medicines || '');
-             const notes = data.notes || '';
+             const diagnosis = data.diagnosis || '';
+             const medication = data.medication || '';
+             const status = data.status || '';
              const id = doc.id;
              tbody.innerHTML += `<tr>
                <td>${dateStr}</td>
                <td>${doctor}</td>
-               <td>${medicines}</td>
-               <td>${notes}</td>
+               <td>${diagnosis}</td>
+               <td>${medication}</td>
+               <td><span class="badge bg-${status === 'active' ? 'success' : 'secondary'}">${status}</span></td>
                <td><button class='btn btn-sm btn-outline-primary' onclick='viewPrescription("${id}")'>View</button></td>
              </tr>`;
              window._prescriptions = window._prescriptions || {};
-             window._prescriptions[id] = {date, dateStr, doctor, medicines, notes, ...data};
+             window._prescriptions[id] = {date, dateStr, doctor, diagnosis, medication, status, ...data};
            });
          }
        });
@@ -180,11 +183,39 @@
      const modalBody = document.getElementById('prescription-modal-body');
      modalBody.innerHTML = `
        <div id="printable-prescription">
-         <h5 class='mb-3'>Prescription</h5>
-         <div><strong>Date:</strong> ${data.dateStr}</div>
-         <div><strong>Doctor:</strong> ${data.doctor || ''}</div>
-         <div><strong>Medicines:</strong> ${data.medicines || ''}</div>
-         <div><strong>Notes:</strong> ${data.notes || ''}</div>
+         <div class="text-center mb-4">
+           <h4 class="text-primary">Alisay Medical Center</h4>
+           <h5 class="mb-3">Prescription</h5>
+         </div>
+         <div class="row">
+           <div class="col-md-6">
+             <div class="mb-3"><strong>Date:</strong> ${data.dateStr}</div>
+             <div class="mb-3"><strong>Patient:</strong> ${data.patient || ''}</div>
+             <div class="mb-3"><strong>Doctor:</strong> ${data.doctor || ''}</div>
+           </div>
+           <div class="col-md-6">
+             <div class="mb-3"><strong>Status:</strong> <span class="badge bg-${data.status === 'active' ? 'success' : 'secondary'}">${data.status}</span></div>
+             <div class="mb-3"><strong>Duration:</strong> ${data.duration || ''}</div>
+             <div class="mb-3"><strong>Refills:</strong> ${data.refills || 0}</div>
+           </div>
+         </div>
+         <hr>
+         <div class="mb-3">
+           <strong>Diagnosis:</strong>
+           <div class="mt-2 p-3 bg-light rounded">${data.diagnosis || ''}</div>
+         </div>
+         <div class="mb-3">
+           <strong>Medication:</strong>
+           <div class="mt-2 p-3 bg-light rounded">${data.medication || ''}</div>
+         </div>
+         <div class="mb-3">
+           <strong>Instructions:</strong>
+           <div class="mt-2 p-3 bg-light rounded">${data.instructions || ''}</div>
+         </div>
+         ${data.notes ? `<div class="mb-3">
+           <strong>Additional Notes:</strong>
+           <div class="mt-2 p-3 bg-light rounded">${data.notes}</div>
+         </div>` : ''}
        </div>
      `;
      var modal = new bootstrap.Modal(document.getElementById('prescriptionModal'));

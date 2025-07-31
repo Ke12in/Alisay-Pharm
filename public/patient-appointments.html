@@ -359,6 +359,21 @@
           status: 'pending',
           createdAt: firebase.firestore.FieldValue.serverTimestamp()
         });
+
+        // Create notification for the doctor
+        try {
+          await firebase.firestore().collection('notifications').add({
+            doctorId: doctorId,
+            title: 'New Appointment Request',
+            message: `Patient ${currentUser.displayName || currentUser.email} has requested an appointment for ${serviceName}`,
+            type: 'appointment_request',
+            read: false,
+            createdAt: firebase.firestore.FieldValue.serverTimestamp()
+          });
+        } catch (err) {
+          console.error('Error creating notification:', err);
+        }
+
         showApptToast('Appointment booked successfully!');
         bookModal.hide();
         loadAppointments();

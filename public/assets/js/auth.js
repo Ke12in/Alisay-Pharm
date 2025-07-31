@@ -401,7 +401,7 @@ if (window.location.pathname.endsWith('admin-products.html')) {
         tr.innerHTML = `
           <td>${product.name || ''}</td>
           <td>${product.category || ''}</td>
-          <td>${product.price !== undefined ? '₵' + Number(product.price).toFixed(2) : ''}</td>
+          <td>${product.price !== undefined ? '₦' + Number(product.price).toFixed(2) : ''}</td>
           <td>${product.stock !== undefined ? product.stock : ''}</td>
           <td>
             <button class="btn btn-sm btn-outline-primary me-2 edit-product-btn" data-id="${product.id}">Edit</button>
