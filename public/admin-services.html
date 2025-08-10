@@ -232,15 +232,15 @@
                 <form id="add-service-form">
                   <div class="mb-3">
                     <label for="service-name" class="form-label">Name</label>
-                    <input type="text" class="form-control" id="service-name" required>
+                    <input type="text" class="form-control" id="service-name" name="service-name" required>
                   </div>
                   <div class="mb-3">
                     <label for="service-description" class="form-label">Description</label>
-                    <textarea class="form-control" id="service-description" rows="2" required></textarea>
+                    <textarea class="form-control" id="service-description" name="service-description" rows="2" required></textarea>
                   </div>
                   <div class="mb-3">
                     <label for="service-price" class="form-label">Price</label>
-                    <input type="number" class="form-control" id="service-price" min="0" step="0.01" required>
+                    <input type="number" class="form-control" id="service-price" name="service-price" min="0" step="0.01" required>
                   </div>
                   <button type="submit" class="btn btn-primary w-100">Add Service</button>
                 </form>
@@ -258,18 +258,18 @@
               </div>
               <div class="modal-body">
                 <form id="edit-service-form">
-                  <input type="hidden" id="edit-service-id">
+                  <input type="hidden" id="edit-service-id" name="edit-service-id">
                   <div class="mb-3">
                     <label for="edit-service-name" class="form-label">Name</label>
-                    <input type="text" class="form-control" id="edit-service-name" required>
+                    <input type="text" class="form-control" id="edit-service-name" name="edit-service-name" required>
                   </div>
                   <div class="mb-3">
                     <label for="edit-service-description" class="form-label">Description</label>
-                    <textarea class="form-control" id="edit-service-description" rows="2" required></textarea>
+                    <textarea class="form-control" id="edit-service-description" name="edit-service-description" rows="2" required></textarea>
                   </div>
                   <div class="mb-3">
                     <label for="edit-service-price" class="form-label">Price</label>
-                    <input type="number" class="form-control" id="edit-service-price" min="0" step="0.01" required>
+                    <input type="number" class="form-control" id="edit-service-price" name="edit-service-price" min="0" step="0.01" required>
                   </div>
                   <button type="submit" class="btn btn-primary w-100">Save Changes</button>
                 </form>
