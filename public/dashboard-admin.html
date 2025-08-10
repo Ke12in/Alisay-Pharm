@@ -265,6 +265,139 @@
     });
   </script>
   <script>
+    // Forgot Password logic
+    document.getElementById('forgotPasswordLink').onclick = function(e) {
+      e.preventDefault();
+      const email = prompt('Please enter your email address to reset your password:');
+      if (email) {
+        firebase.auth().sendPasswordResetEmail(email)
+          .then(() => {
+            alert('Password reset email sent! Please check your inbox.');
+          })
+          .catch(error => {
+            alert(error.message);
+          });
+      }
+    };
+  </script>
+  <script>
+    // Firebase authentication and data loading
+    let currentUser = null;
+    
+    // Check authentication on page load
+    firebase.auth().onAuthStateChanged(function(user) {
+      if (user) {
+        currentUser = user;
+        loadUserProfile();
+        loadDashboardData();
+      } else {
+        window.location.href = 'login.html';
+      }
+    });
+
+    // Load user profile
+    async function loadUserProfile() {
+      try {
+        const userDoc = await firebase.firestore().collection('users').doc(currentUser.uid).get();
+        if (userDoc.exists) {
+          const userData = userDoc.data();
+          document.getElementById('admin-name').textContent = userData.name || 'Admin';
+          
+          // Update profile image if available
+          if (userData.profileImage) {
+            document.querySelector('.profile-img').innerHTML = `<img src="${userData.profileImage}" alt="Profile" style="width:100%; height:100%; border-radius:50%; object-fit:cover;">`;
+          }
+        }
+      } catch (error) {
+        console.error('Error loading profile:', error);
+      }
+    }
+
+    // Load dashboard data
+    async function loadDashboardData() {
+      try {
+        // Load total users
+        const usersSnapshot = await firebase.firestore().collection('users').get();
+        document.getElementById('total-users').textContent = usersSnapshot.size;
+
+        // Load total appointments
+        const appointmentsSnapshot = await firebase.firestore().collection('appointments').get();
+        document.getElementById('total-appointments').textContent = appointmentsSnapshot.size;
+
+        // Load total products
+        const productsSnapshot = await firebase.firestore().collection('products').get();
+        document.getElementById('total-products').textContent = productsSnapshot.size;
+
+        // Load total services
+        const servicesSnapshot = await firebase.firestore().collection('services').get();
+        document.getElementById('total-services').textContent = servicesSnapshot.size;
+
+        // Load recent activity
+        loadRecentActivity();
+      } catch (error) {
+        console.error('Error loading dashboard data:', error);
+      }
+    }
+
+    // Load recent activity
+    async function loadRecentActivity() {
+      try {
+        const recentActivityCard = document.querySelector('.card p.text-muted');
+        const activities = [];
+
+        // Get recent users
+        const recentUsers = await firebase.firestore().collection('users')
+          .orderBy('createdAt', 'desc')
+          .limit(3)
+          .get();
+        
+        recentUsers.forEach(doc => {
+          const userData = doc.data();
+          activities.push(`New user ${userData.name} (${userData.role}) registered`);
+        });
+
+        // Get recent appointments
+        const recentAppointments = await firebase.firestore().collection('appointments')
+          .orderBy('date', 'desc')
+          .limit(3)
+          .get();
+        
+        recentAppointments.forEach(doc => {
+          const apptData = doc.data();
+          activities.push(`Appointment scheduled for ${apptData.date ? new Date(apptData.date.seconds ? apptData.date.toDate() : apptData.date).toLocaleDateString() : 'N/A'}`);
+        });
+
+        // Get recent products
+        const recentProducts = await firebase.firestore().collection('products')
+          .orderBy('createdAt', 'desc')
+          .limit(3)
+          .get();
+        
+        recentProducts.forEach(doc => {
+          const productData = doc.data();
+          activities.push(`Product ${productData.name} added to inventory`);
+        });
+
+        if (activities.length > 0) {
+          const activityList = activities.slice(0, 5).map(activity => 
+            `<li class="list-group-item"><i class="fas fa-circle text-primary me-2"></i>${activity}</li>`
+          ).join('');
+          
+          recentActivityCard.parentElement.innerHTML = `
+            <h4>Recent Activity</h4>
+            <ul class="list-group list-group-flush">
+              ${activityList}
+            </ul>
+          `;
+        } else {
+          recentActivityCard.textContent = 'No recent activity.';
+        }
+      } catch (error) {
+        console.error('Error loading recent activity:', error);
+      }
+    }
+
+    // Logout function
     function logout() {
       firebase.auth().signOut().then(() => {
         window.location.href = 'login.html';
@@ -292,22 +425,6 @@
         closeSidebarMobile();
       });
     });
-  </script>
-  <script>
-    // Forgot Password logic
-    document.getElementById('forgotPasswordLink').onclick = function(e) {
-      e.preventDefault();
-      const email = prompt('Please enter your email address to reset your password:');
-      if (email) {
-        firebase.auth().sendPasswordResetEmail(email)
-          .then(() => {
-            alert('Password reset email sent! Please check your inbox.');
-          })
-          .catch(error => {
-            alert(error.message);
-          });
-      }
-    };
   </script>
 </body>
 </html> 
