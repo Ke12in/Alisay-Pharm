@@ -299,6 +299,161 @@
         window.location.href = 'login.html';
       });
     }
+
+    // User management functionality
+    let currentUser = null;
+    let users = [];
+
+    // Check authentication
+    firebase.auth().onAuthStateChanged(function(user) {
+      if (user) {
+        currentUser = user;
+        // Check if user is admin
+        firebase.firestore().collection('users').doc(user.uid).get().then(doc => {
+          if (doc.exists && doc.data().role === 'admin') {
+            loadUsers();
+          } else {
+            alert('Access denied. Admin privileges required.');
+            window.location.href = 'dashboard.html';
+          }
+        });
+      } else {
+        window.location.href = 'login.html';
+      }
+    });
+
+    // Load all users
+    function loadUsers() {
+      const tbody = document.getElementById('users-table-body');
+      tbody.innerHTML = '<tr><td colspan="4" class="text-center">Loading users...</td></tr>';
+      
+      firebase.firestore().collection('users').get().then(snapshot => {
+        users = snapshot.docs.map(doc => ({...doc.data(), id: doc.id}));
+        
+        if (users.length === 0) {
+          tbody.innerHTML = '<tr><td colspan="4" class="text-center">No users found</td></tr>';
+          return;
+        }
+        
+        tbody.innerHTML = users.map(user => `
+          <tr>
+            <td>${user.name || 'N/A'}</td>
+            <td>${user.email}</td>
+            <td><span class="badge bg-${getRoleBadgeColor(user.role)}">${user.role}</span></td>
+            <td>
+              <button class="btn btn-sm btn-primary" onclick="editUser('${user.id}')">Edit</button>
+              <button class="btn btn-sm btn-danger" onclick="deleteUser('${user.id}')">Delete</button>
+            </td>
+          </tr>
+        `).join('');
+      }).catch(error => {
+        console.error('Error loading users:', error);
+        tbody.innerHTML = '<tr><td colspan="4" class="text-center text-danger">Error loading users</td></tr>';
+      });
+    }
+
+    // Get role badge color
+    function getRoleBadgeColor(role) {
+      switch(role) {
+        case 'admin': return 'danger';
+        case 'doctor': return 'primary';
+        case 'sales': return 'warning';
+        case 'patient': return 'success';
+        default: return 'secondary';
+      }
+    }
+
+    // Edit user
+    function editUser(userId) {
+      const user = users.find(u => u.id === userId);
+      if (!user) return;
+      
+      document.getElementById('edit-user-id').value = userId;
+      document.getElementById('edit-user-name').value = user.name || '';
+      document.getElementById('edit-user-email').value = user.email;
+      document.getElementById('edit-user-role').value = user.role;
+      
+      $('#editUserModal').modal('show');
+    }
+
+    // Delete user
+    function deleteUser(userId) {
+      const user = users.find(u => u.id === userId);
+      if (!user) return;
+      
+      if (user.id === currentUser.uid) {
+        showToast('You cannot delete your own account!', true);
+        return;
+      }
+      
+      document.getElementById('delete-user-info').innerHTML = `
+        <strong>Name:</strong> ${user.name || 'N/A'}<br>
+        <strong>Email:</strong> ${user.email}<br>
+        <strong>Role:</strong> ${user.role}
+      `;
+      
+      document.getElementById('confirm-delete-user').onclick = function() {
+        firebase.firestore().collection('users').doc(userId).delete().then(() => {
+          showToast('User deleted successfully!');
+          $('#deleteUserModal').modal('hide');
+          loadUsers();
+        }).catch(error => {
+          showToast('Error deleting user: ' + error.message, true);
+        });
+      };
+      
+      $('#deleteUserModal').modal('show');
+    }
+
+    // Save user changes
+    document.getElementById('edit-user-form').addEventListener('submit', function(e) {
+      e.preventDefault();
+      
+      const userId = document.getElementById('edit-user-id').value;
+      const name = document.getElementById('edit-user-name').value;
+      const role = document.getElementById('edit-user-role').value;
+      
+      firebase.firestore().collection('users').doc(userId).update({
+        name: name,
+        role: role,
+        updatedAt: firebase.firestore.FieldValue.serverTimestamp()
+      }).then(() => {
+        showToast('User updated successfully!');
+        $('#editUserModal').modal('hide');
+        loadUsers();
+      }).catch(error => {
+        showToast('Error updating user: ' + error.message, true);
+      });
+    });
+
+    // Search users
+    document.getElementById('user-search').addEventListener('input', function(e) {
+      const searchTerm = e.target.value.toLowerCase();
+      const rows = document.querySelectorAll('#users-table-body tr');
+      
+      rows.forEach(row => {
+        if (row.cells.length === 1) return; // Skip loading/empty rows
+        
+        const name = row.cells[0].textContent.toLowerCase();
+        const email = row.cells[1].textContent.toLowerCase();
+        const role = row.cells[2].textContent.toLowerCase();
+        
+        const matches = name.includes(searchTerm) || email.includes(searchTerm) || role.includes(searchTerm);
+        row.style.display = matches ? '' : 'none';
+      });
+    });
+
+    // Show toast message
+    function showToast(message, isError = false) {
+      const toast = document.getElementById('admin-toast');
+      const toastBody = document.getElementById('admin-toast-body');
+      
+      toast.className = `toast align-items-center text-bg-${isError ? 'danger' : 'primary'} border-0`;
+      toastBody.textContent = message;
+      
+      const bsToast = new bootstrap.Toast(toast);
+      bsToast.show();
+    }
   </script>
   <script>
     // Sidebar toggle logic (matches admin-appointments.html)
