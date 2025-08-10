@@ -66,23 +66,348 @@
     .sidebar-mobile { position: fixed; top: 0; left: 0; width: 220px; height: 100vh; background: #1a237e; color: #fff; display: flex; flex-direction: column; padding: 2rem 1rem 1rem 1rem; box-shadow: 2px 0 8px rgba(31,38,135,0.08); z-index: 2000; transition: transform 0.3s ease; transform: translateX(-100%); }
     .sidebar-mobile.show { transform: translateX(0); }
     .sidebar-toggle-btn { display: none; }
-    /* Increase table width and improve button spacing */
-    .table-responsive { min-width: 1200px; }
-    .action-buttons { display: flex; gap: 0.25rem; flex-wrap: wrap; }
-    .action-buttons .btn { font-size: 0.75rem; padding: 0.25rem 0.5rem; }
-    .modal { z-index: 1055; }
-    .modal-backdrop { z-index: 1050; }
+    /* Dashboard Layout Improvements */
+    .dashboard-container {
+      max-width: 1400px;
+      width: 100%;
+      margin: 0 auto;
+      padding: 2rem;
+    }
+    
+    .card {
+      border: none;
+      border-radius: 1.5rem;
+      box-shadow: 0 8px 32px 0 rgba(31, 38, 135, 0.15);
+      transition: box-shadow 0.3s cubic-bezier(.4,2,.6,1), transform 0.3s cubic-bezier(.4,2,.6,1);
+      background: #fff;
+      width: 100%;
+      max-width: none;
+    }
+    
+    /* Responsive table improvements */
+    .table-responsive { 
+      border-radius: 0.5rem;
+      overflow-x: auto;
+      overflow-y: hidden;
+    }
+    
+    .table {
+      min-width: 800px;
+      width: 100%;
+    }
+    
+    /* Make table columns more responsive */
+    .table th,
+    .table td {
+      white-space: nowrap;
+      padding: 0.5rem;
+    }
+    
+    /* Responsive column widths */
+    .table th:nth-child(1), .table td:nth-child(1) { width: 40px; } /* Checkbox */
+    .table th:nth-child(2), .table td:nth-child(2) { width: 150px; } /* Date/Time */
+    .table th:nth-child(3), .table td:nth-child(3) { width: 120px; } /* Patient */
+    .table th:nth-child(4), .table td:nth-child(4) { width: 120px; } /* Service */
+    .table th:nth-child(5), .table td:nth-child(5) { width: 100px; } /* Status */
+    .table th:nth-child(6), .table td:nth-child(6) { width: 150px; } /* Notes */
+    .table th:nth-child(7), .table td:nth-child(7) { width: 200px; } /* Actions */
+    
+    .table {
+      margin-bottom: 0;
+    }
+    
+    .table thead th {
+      background-color: #f8f9fa;
+      border-bottom: 2px solid #dee2e6;
+      font-weight: 600;
+      color: #495057;
+    }
+    
+    .action-buttons { 
+      display: flex; 
+      gap: 0.25rem; 
+      flex-wrap: wrap; 
+      justify-content: flex-start;
+    }
+    
+    .action-buttons .btn { 
+      font-size: 0.75rem; 
+      padding: 0.25rem 0.5rem; 
+      border-radius: 0.375rem;
+      min-width: 28px;
+      height: 28px;
+      display: flex;
+      align-items: center;
+      justify-content: center;
+    }
+    
+    .modal { 
+      z-index: 1055; 
+    }
+    .modal-backdrop { 
+      z-index: 1050; 
+    }
+    
+    /* Ensure modal content is interactive */
+    .modal-content {
+      z-index: 1056;
+      position: relative;
+    }
+    
+    /* Fix form field interactions */
+    .modal .form-control,
+    .modal .form-select {
+      z-index: 1057;
+      position: relative;
+      pointer-events: auto;
+    }
+    
+    /* Ensure buttons are clickable */
+    .modal .btn {
+      z-index: 1057;
+      position: relative;
+      pointer-events: auto;
+    }
+    
+    /* Fix modal backdrop issues */
+    .modal.show {
+      display: block !important;
+    }
+    
+    .modal.show .modal-dialog {
+      pointer-events: auto;
+    }
+    
+    /* Ensure modal buttons are clickable */
+    .modal .btn-close {
+      z-index: 1058;
+      position: relative;
+      pointer-events: auto;
+    }
+    
+    .modal .modal-footer .btn {
+      z-index: 1058;
+      position: relative;
+      pointer-events: auto;
+    }
+    
+    /* Fix modal backdrop interaction */
+    .modal-backdrop {
+      pointer-events: auto;
+    }
+    
+    /* Custom Modal Styles */
+    .custom-modal {
+      position: fixed;
+      top: 0;
+      left: 0;
+      width: 100%;
+      height: 100%;
+      z-index: 9999;
+      display: flex;
+      align-items: center;
+      justify-content: center;
+    }
+    
+    .custom-modal-overlay {
+      position: absolute;
+      top: 0;
+      left: 0;
+      width: 100%;
+      height: 100%;
+      background-color: rgba(0, 0, 0, 0.5);
+    }
+    
+    .custom-modal-content {
+      position: relative;
+      background: white;
+      border-radius: 8px;
+      box-shadow: 0 4px 20px rgba(0, 0, 0, 0.3);
+      width: 90%;
+      max-width: 600px;
+      max-height: 90vh;
+      overflow-y: auto;
+      z-index: 10000;
+    }
+    
+    .custom-modal-header {
+      background: #007bff;
+      color: white;
+      padding: 1rem;
+      border-radius: 8px 8px 0 0;
+      display: flex;
+      justify-content: space-between;
+      align-items: center;
+    }
+    
+    .custom-modal-close {
+      background: none;
+      border: none;
+      color: white;
+      font-size: 1.5rem;
+      cursor: pointer;
+      padding: 0;
+      width: 30px;
+      height: 30px;
+      display: flex;
+      align-items: center;
+      justify-content: center;
+    }
+    
+    .custom-modal-close:hover {
+      background-color: rgba(255, 255, 255, 0.1);
+      border-radius: 4px;
+    }
+    
+    .custom-modal-body {
+      padding: 1.5rem;
+    }
+    
+    .custom-modal-footer {
+      padding: 1rem;
+      border-top: 1px solid #dee2e6;
+      display: flex;
+      justify-content: flex-end;
+      gap: 0.5rem;
+    }
+    
+    /* Topbar styling */
+    .topbar {
+      background: linear-gradient(135deg, #667eea 0%, #764ba2 100%);
+      color: white;
+      padding: 1rem 1.5rem;
+      border-radius: 1rem;
+      margin-bottom: 2rem;
+    }
+    
+    .topbar .btn-outline-primary {
+      color: white;
+      border-color: rgba(255,255,255,0.3);
+    }
+    
+    .topbar .btn-outline-primary:hover {
+      background-color: rgba(255,255,255,0.1);
+      border-color: rgba(255,255,255,0.5);
+    }
+    
+    /* Appointments section styling */
+    #appointments-section {
+      background: #f8f9fa;
+      border-radius: 1rem;
+      padding: 1.5rem;
+      margin-bottom: 2rem;
+    }
+    
+    .nav-tabs .nav-link {
+      border-radius: 0.5rem 0.5rem 0 0;
+      font-weight: 500;
+    }
+    
+    .nav-tabs .nav-link.active {
+      background-color: #fff;
+      border-color: #dee2e6 #dee2e6 #fff;
+    }
+    
+    /* Filter and search styling */
+    .d-flex.mb-2.gap-2.align-items-center {
+      background: white;
+      padding: 1rem;
+      border-radius: 0.5rem;
+      border: 1px solid #dee2e6;
+    }
+    
+    /* Button styling improvements */
+    .btn-lg-custom {
+      padding: 0.75rem 1.5rem;
+      font-size: 1rem;
+      font-weight: 500;
+      border-radius: 0.5rem;
+    }
+    
+    /* Status badges */
+    .badge {
+      font-size: 0.75rem;
+      padding: 0.375rem 0.75rem;
+    }
+    
+    /* Responsive improvements */
+    @media (max-width: 1400px) {
+      .dashboard-container {
+        padding: 1rem;
+      }
+    }
+    
+    @media (max-width: 1200px) {
+      .dashboard-container {
+        padding: 0.5rem;
+      }
+      
+      .card {
+        padding: 1rem !important;
+      }
+    }
+    
+    @media (max-width: 768px) {
+      .dashboard-container {
+        padding: 0.25rem;
+      }
+      
+      .card {
+        padding: 0.5rem !important;
+      }
+      
+      .table {
+        min-width: 600px;
+        font-size: 0.875rem;
+      }
+      
+      .action-buttons .btn {
+        font-size: 0.625rem;
+        padding: 0.125rem 0.25rem;
+      }
+      
+      .btn-lg-custom {
+        padding: 0.5rem 1rem;
+        font-size: 0.875rem;
+      }
+    }
+    
+    @media (max-width: 576px) {
+      .dashboard-container {
+        padding: 0.125rem;
+      }
+      
+      .card {
+        padding: 0.25rem !important;
+      }
+      
+      .table {
+        min-width: 500px;
+        font-size: 0.75rem;
+      }
+      
+      .action-buttons .btn {
+        font-size: 0.5rem;
+        padding: 0.125rem 0.25rem;
+      }
+      
+      .btn-lg-custom {
+        padding: 0.375rem 0.75rem;
+        font-size: 0.75rem;
+      }
+    }
   </style>
 </head>
 <body>
   <main>
-    <div class="card p-4 fade-in position-relative" style="max-width: 520px; width: 100%;">
+      <div class="dashboard-container">
+        <div class="card p-4 fade-in position-relative">
       <button class="btn btn-outline-danger btn-sm position-absolute" id="logoutBtn" style="top: 1.5rem; right: 1.5rem; z-index: 10;"><i class="fa-solid fa-sign-out-alt"></i> Logout</button>
-      <div class="text-center">
+          <div class="text-center mb-4">
         <img src="https://img.icons8.com/ios-filled/100/4a90e2/hospital-room.png" alt="Logo" class="logo mb-2">
         <h2 class="mb-2">Welcome, Doctor!</h2>
-        <p class="text-muted mb-4">View your appointments and manage patient records.</p>
-      </div>
+            <p class="text-muted mb-0">View your appointments and manage patient records.</p>
+          </div>
       <div class="topbar">
         <div class="d-flex align-items-center gap-3">
           <div class="dropdown">
@@ -184,24 +509,65 @@
           <div class="card p-3">
             <div id="doctorCalendar" style="min-height: 500px;"></div>
       </div>
-        </div>
-      </div>
-      <!-- View Appointment Modal -->
-      <div class="modal fade" id="viewAppointmentModal" tabindex="-1" aria-labelledby="viewAppointmentModalLabel" aria-hidden="true" data-bs-backdrop="static">
-        <div class="modal-dialog">
-          <div class="modal-content">
-            <div class="modal-header bg-info text-white">
-              <h5 class="modal-title" id="viewAppointmentModalLabel"><i class="fa-solid fa-eye me-2"></i>Appointment Details</h5>
-              <button type="button" class="btn-close btn-close-white" data-bs-dismiss="modal" aria-label="Close"></button>
             </div>
-            <div class="modal-body" id="viewAppointmentBody">
-              <!-- Content will be loaded here -->
             </div>
-            <div class="modal-footer">
-              <button type="button" class="btn btn-secondary" data-bs-dismiss="modal">Close</button>
+      <!-- Custom View Appointment Modal -->
+      <div id="customViewAppointmentModal" class="custom-modal" style="display: none;">
+        <div class="custom-modal-overlay"></div>
+        <div class="custom-modal-content">
+          <div class="custom-modal-header">
+            <h5><i class="fa-solid fa-eye me-2"></i>Appointment Details</h5>
+            <button type="button" class="custom-modal-close" onclick="closeCustomViewModal()">&times;</button>
           </div>
+          <div class="custom-modal-body" id="customViewAppointmentBody">
+            <!-- Content will be loaded here -->
+        </div>
+          <div class="custom-modal-footer">
+            <button type="button" class="btn btn-secondary" onclick="closeCustomViewModal()">Close</button>
+      </div>
         </div>
       </div>
+
+      <!-- Custom Upload Lab Results Modal -->
+      <div id="customUploadLabModal" class="custom-modal" style="display: none;">
+        <div class="custom-modal-overlay"></div>
+        <div class="custom-modal-content">
+          <div class="custom-modal-header">
+            <h5><i class="fa-solid fa-flask me-2"></i>Upload Lab Results</h5>
+            <button type="button" class="custom-modal-close" onclick="closeCustomUploadModal()">&times;</button>
+          </div>
+          <form id="customUploadLabForm">
+            <div class="custom-modal-body">
+              <div class="mb-3">
+                <label for="customLabPatient" class="form-label">Patient</label>
+                <select class="form-select" id="customLabPatient" required>
+                  <option value="">Select patient</option>
+                </select>
+              </div>
+              <div class="mb-3">
+                <label for="customLabTestType" class="form-label">Test Type</label>
+                <input type="text" class="form-control" id="customLabTestType" placeholder="e.g., Blood Test, Urine Analysis" required>
+              </div>
+              <div class="mb-3">
+                <label for="customLabResults" class="form-label">Results</label>
+                <textarea class="form-control" id="customLabResults" rows="4" placeholder="Enter lab results details..." required></textarea>
+              </div>
+              <div class="mb-3">
+                <label for="customLabDate" class="form-label">Test Date</label>
+                <input type="date" class="form-control" id="customLabDate" required>
+              </div>
+              <div class="mb-3">
+                <label for="customLabFile" class="form-label">Upload File (Optional)</label>
+                <input type="file" class="form-control" id="customLabFile" accept=".pdf,.doc,.docx,.jpg,.jpeg,.png">
+                <div class="form-text">Supported formats: PDF, DOC, DOCX, JPG, PNG</div>
+              </div>
+            </div>
+            <div class="custom-modal-footer">
+              <button type="button" class="btn btn-secondary" onclick="closeCustomUploadModal()">Cancel</button>
+              <button type="submit" class="btn btn-primary">Upload Results</button>
+            </div>
+          </form>
+        </div>
       </div>
       <!-- Reject Appointment Modal -->
       <div class="modal fade" id="rejectAppointmentModal" tabindex="-1" aria-labelledby="rejectAppointmentModalLabel" aria-hidden="true" data-bs-backdrop="static">
@@ -362,9 +728,14 @@
         <button class="btn btn-info" id="bulkCompleteBtn"><i class="fa-solid fa-circle-check"></i> Mark as Completed</button>
         <span id="bulkCount" class="ms-3 text-muted"></span>
       </div>
-      <div class="d-flex gap-2 justify-content-center flex-wrap mt-3 mb-2">
-        <button class="btn btn-outline-primary btn-lg-custom" id="uploadLabBtn">Upload Lab Results</button>
-        <button class="btn btn-outline-secondary btn-lg-custom" onclick="goBack()">Back</button>
+              <div class="d-flex gap-3 justify-content-center flex-wrap mt-4 mb-2">
+          <button class="btn btn-outline-primary btn-lg-custom" id="uploadLabBtn">
+            <i class="fa-solid fa-flask me-2"></i>Upload Lab Results
+          </button>
+          <button class="btn btn-outline-secondary btn-lg-custom" onclick="goBack()">
+            <i class="fa-solid fa-arrow-left me-2"></i>Back
+          </button>
+        </div>
       </div>
     </div>
   </main>
@@ -377,6 +748,7 @@
   <script src="https://www.gstatic.com/firebasejs/9.22.2/firebase-app-compat.js"></script>
   <script src="https://www.gstatic.com/firebasejs/9.22.2/firebase-auth-compat.js"></script>
   <script src="https://www.gstatic.com/firebasejs/9.22.2/firebase-firestore-compat.js"></script>
+    <script src="https://www.gstatic.com/firebasejs/9.22.2/firebase-storage-compat.js"></script>
   <!-- Your JS files -->
   <script src="assets/js/main.js"></script>
   <script src="assets/js/auth.js"></script>
@@ -600,16 +972,72 @@
           });
         });
         
-        // TEMPORARY: Show all appointments for debugging
-        const todaySnap = await firebase.firestore().collection('appointments').get();
-        const upcomingSnap = await firebase.firestore().collection('appointments').get();
+        // Get appointments for this doctor
+      const todaySnap = await firebase.firestore().collection('appointments')
+          .where('doctorId', '==', currentDoctor.uid)
+        .get();
+      const upcomingSnap = await firebase.firestore().collection('appointments')
+          .where('doctorId', '==', currentDoctor.uid)
+        .get();
 
         console.log('Today appointments found:', todaySnap.size);
         console.log('Upcoming appointments found:', upcomingSnap.size);
-
+        
+        // Debug: Check if we have any appointments at all
       if (todaySnap.empty && upcomingSnap.empty) {
-        apptTbodyToday.innerHTML = '<tr><td colspan="6" class="text-center text-muted">No appointments found.</td></tr>';
-        apptTbodyUpcoming.innerHTML = '<tr><td colspan="6" class="text-center text-muted">No appointments found.</td></tr>';
+          console.log('No appointments found for this doctor');
+        } else {
+          console.log('Found appointments, processing...');
+        }
+
+              if (todaySnap.empty && upcomingSnap.empty) {
+          console.log('No appointments found in database, creating test appointments...');
+          
+          // Create some test appointments
+          try {
+            const testAppointments = [
+              {
+                patient: 'John Doe',
+                service: 'General Checkup',
+                date: new Date(Date.now() + 2 * 60 * 60 * 1000), // 2 hours from now
+                status: 'pending',
+                notes: 'Regular checkup',
+                doctorId: currentDoctor.uid
+              },
+              {
+                patient: 'Jane Smith',
+                service: 'Blood Test',
+                date: new Date(Date.now() + 24 * 60 * 60 * 1000), // Tomorrow
+                status: 'approved',
+                notes: 'Fasting required',
+                doctorId: currentDoctor.uid
+              },
+              {
+                patient: 'Mike Johnson',
+                service: 'Consultation',
+                date: new Date(Date.now() + 3 * 24 * 60 * 60 * 1000), // 3 days from now
+                status: 'pending',
+                notes: 'Follow-up appointment',
+                doctorId: currentDoctor.uid
+              }
+            ];
+            
+            for (const appointment of testAppointments) {
+              await firebase.firestore().collection('appointments').add(appointment);
+            }
+            
+            console.log('Test appointments created successfully');
+            // Reload appointments after creating test data
+            setTimeout(() => {
+              loadDoctorAppointments();
+            }, 1000);
+            
+          } catch (err) {
+            console.error('Error creating test appointments:', err);
+          }
+          
+          apptTbodyToday.innerHTML = '<tr><td colspan="6" class="text-center text-muted">No appointments found. Creating test data...</td></tr>';
+          apptTbodyUpcoming.innerHTML = '<tr><td colspan="6" class="text-center text-muted">No appointments found. Creating test data...</td></tr>';
         return;
       }
 
@@ -622,27 +1050,76 @@
 
       todaySnap.forEach(doc => {
         const data = doc.data();
-        const date = data.date ? (data.date.seconds ? new Date(data.date.toDate()) : new Date(data.date)) : '';
-          if (date && date >= now) {
-            todayAppointments.push({ doc, data, date });
+          console.log('Processing appointment:', data);
+          
+          let date;
+          if (data.date) {
+            if (data.date.seconds) {
+              date = new Date(data.date.toDate());
+            } else if (typeof data.date === 'string') {
+              date = new Date(data.date);
+            } else {
+              date = new Date(data.date);
+            }
           }
+          
+          console.log('Parsed date:', date);
+          
+          // Show all appointments for now (remove date filtering temporarily)
+          todayAppointments.push({ doc, data, date });
         });
 
         upcomingSnap.forEach(doc => {
           const data = doc.data();
-          const date = data.date ? (data.date.seconds ? new Date(data.date.toDate()) : new Date(data.date)) : '';
-          if (date && date > now) {
-            upcomingAppointments.push({ doc, data, date });
+          console.log('Processing upcoming appointment:', data);
+          
+          let date;
+          if (data.date) {
+            if (data.date.seconds) {
+              date = new Date(data.date.toDate());
+            } else if (typeof data.date === 'string') {
+              date = new Date(data.date);
+            } else {
+              date = new Date(data.date);
+            }
           }
+          
+          console.log('Parsed upcoming date:', date);
+          
+          // Show all appointments for now (remove date filtering temporarily)
+          upcomingAppointments.push({ doc, data, date });
         });
 
         // Sort appointments by date
         todayAppointments.sort((a, b) => a.date - b.date);
         upcomingAppointments.sort((a, b) => a.date - b.date);
 
+        console.log('Rendering today appointments:', todayAppointments.length);
+        console.log('apptTbodyToday element:', apptTbodyToday);
+        console.log('apptTbodyToday parent:', apptTbodyToday?.parentElement);
+        console.log('apptTbodyToday parent table:', apptTbodyToday?.parentElement?.parentElement);
+        
+        if (!apptTbodyToday) {
+          console.error('apptTbodyToday element not found!');
+          return;
+        }
+        
         todayAppointments.forEach(({ doc, data, date }) => {
-        if (date && date < now) return; // Only show today/future
-        const dateStr = date ? date.toLocaleString() : '';
+          console.log('Rendering appointment:', { doc: doc.id, data, date });
+          
+          // Format date properly
+          let dateStr = '';
+          if (date) {
+            try {
+              dateStr = date.toLocaleString();
+            } catch (err) {
+              console.error('Error formatting date:', err);
+              dateStr = 'Invalid date';
+            }
+          } else {
+            dateStr = 'No date';
+          }
+          
         const patient = data.patient || '';
         const service = data.service || '';
         const status = data.status || '';
@@ -655,11 +1132,18 @@
         else if (status==='completed') statusClass = 'info';
 
         // Highlight soon appointments (e.g., within 1 hour)
+          let isSoon = false;
+          if (date) {
+            try {
         const appointmentTime = new Date(date);
         const timeDiff = appointmentTime - now;
-        const isSoon = timeDiff > 0 && timeDiff < 3600000; // More than 0 seconds and less than 1 hour
+              isSoon = timeDiff > 0 && timeDiff < 3600000; // More than 0 seconds and less than 1 hour
+            } catch (err) {
+              console.error('Error calculating time difference:', err);
+            }
+          }
 
-        apptTbodyToday.innerHTML += `<tr class='${isSoon ? 'table-warning' : ''}'>
+          const rowHtml = `<tr class='${isSoon ? 'table-warning' : ''}'>
           <td><input type="checkbox" class="appt-checkbox" data-id='${doc.id}'></td>
           <td>${dateStr}</td>
           <td>${patient}</td>
@@ -667,20 +1151,50 @@
           <td><span class="badge bg-${statusClass} text-capitalize">${status}</span>${status==='rejected'&&reason?`<br><small class='text-danger'>${reason}</small>`:''}</td>
           <td>${notes}</td>
           <td>
-              <div class="action-buttons">
-                <button class='btn btn-sm btn-outline-info view-appt-btn' data-id='${doc.id}' title="View Details"><i class='fa-solid fa-eye'></i></button>
-                ${status==='pending'?`<button class='btn btn-sm btn-outline-success approve-appt-btn' data-id='${doc.id}' title="Approve"><i class='fa-solid fa-check'></i></button>`:''}
-                ${status==='pending'?`<button class='btn btn-sm btn-outline-danger reject-appt-btn' data-id='${doc.id}' title="Reject"><i class='fa-solid fa-xmark'></i></button>`:''}
-                ${status==='approved'?`<button class='btn btn-sm btn-outline-info complete-appt-btn' data-id='${doc.id}' title="Mark Complete"><i class='fa-solid fa-check-double'></i></button>`:''}
-                <button class='btn btn-sm btn-outline-primary write-prescription-btn' data-id='${doc.id}' title="Write Prescription"><i class='fa-solid fa-prescription-bottle-medical'></i></button>
-              </div>
+                <div class="action-buttons">
+                  <button class='btn btn-sm btn-outline-info view-appt-btn' data-id='${doc.id}' title="View Details"><i class='fa-solid fa-eye'></i></button>
+                  ${status==='pending'?`<button class='btn btn-sm btn-outline-success approve-appt-btn' data-id='${doc.id}' title="Approve"><i class='fa-solid fa-check'></i></button>`:''}
+                  ${status==='pending'?`<button class='btn btn-sm btn-outline-danger reject-appt-btn' data-id='${doc.id}' title="Reject"><i class='fa-solid fa-xmark'></i></button>`:''}
+                  ${status==='approved'?`<button class='btn btn-sm btn-outline-info complete-appt-btn' data-id='${doc.id}' title="Mark Complete"><i class='fa-solid fa-check-double'></i></button>`:''}
+                  <button class='btn btn-sm btn-outline-primary write-prescription-btn' data-id='${doc.id}' title="Write Prescription"><i class='fa-solid fa-prescription-bottle-medical'></i></button>
+                </div>
           </td>
         </tr>`;
-      });
+          
+          console.log('Adding row HTML:', rowHtml);
+                  try {
+          apptTbodyToday.innerHTML += rowHtml;
+          console.log('Row added successfully');
+          console.log('Current table content length:', apptTbodyToday.innerHTML.length);
+        } catch (err) {
+          console.error('Error adding row to table:', err);
+        }
+        });
 
+        console.log('Rendering upcoming appointments:', upcomingAppointments.length);
+        console.log('apptTbodyUpcoming element:', apptTbodyUpcoming);
+        
+        if (!apptTbodyUpcoming) {
+          console.error('apptTbodyUpcoming element not found!');
+          return;
+        }
+        
         upcomingAppointments.forEach(({ doc, data, date }) => {
-        if (date && date < now) return; // Only show today/future
-        const dateStr = date ? date.toLocaleString() : '';
+          console.log('Rendering upcoming appointment:', { doc: doc.id, data, date });
+          
+          // Format date properly
+          let dateStr = '';
+          if (date) {
+            try {
+              dateStr = date.toLocaleString();
+            } catch (err) {
+              console.error('Error formatting date:', err);
+              dateStr = 'Invalid date';
+            }
+          } else {
+            dateStr = 'No date';
+          }
+          
         const patient = data.patient || '';
         const service = data.service || '';
         const status = data.status || '';
@@ -693,43 +1207,97 @@
         else if (status==='completed') statusClass = 'info';
 
         // Highlight soon appointments (e.g., within 1 hour)
+          let isSoon = false;
+          if (date) {
+            try {
         const appointmentTime = new Date(date);
         const timeDiff = appointmentTime - now;
-        const isSoon = timeDiff > 0 && timeDiff < 3600000; // More than 0 seconds and less than 1 hour
+              isSoon = timeDiff > 0 && timeDiff < 3600000; // More than 0 seconds and less than 1 hour
+            } catch (err) {
+              console.error('Error calculating time difference:', err);
+            }
+          }
 
-        apptTbodyUpcoming.innerHTML += `<tr class='${isSoon ? 'table-warning' : ''}'>
+          const rowHtml = `<tr class='${isSoon ? 'table-warning' : ''}'>
           <td>${dateStr}</td>
           <td>${patient}</td>
           <td>${service}</td>
           <td><span class="badge bg-${statusClass} text-capitalize">${status}</span>${status==='rejected'&&reason?`<br><small class='text-danger'>${reason}</small>`:''}</td>
           <td>${notes}</td>
           <td>
-              <div class="action-buttons">
-                <button class='btn btn-sm btn-outline-info view-appt-btn' data-id='${doc.id}' title="View Details"><i class='fa-solid fa-eye'></i></button>
-                ${status==='pending'?`<button class='btn btn-sm btn-outline-success approve-appt-btn' data-id='${doc.id}' title="Approve"><i class='fa-solid fa-check'></i></button>`:''}
-                ${status==='pending'?`<button class='btn btn-sm btn-outline-danger reject-appt-btn' data-id='${doc.id}' title="Reject"><i class='fa-solid fa-xmark'></i></button>`:''}
-                ${status==='approved'?`<button class='btn btn-sm btn-outline-info complete-appt-btn' data-id='${doc.id}' title="Mark Complete"><i class='fa-solid fa-check-double'></i></button>`:''}
-                <button class='btn btn-sm btn-outline-primary write-prescription-btn' data-id='${doc.id}' title="Write Prescription"><i class='fa-solid fa-prescription-bottle-medical'></i></button>
-              </div>
+                <div class="action-buttons">
+                  <button class='btn btn-sm btn-outline-info view-appt-btn' data-id='${doc.id}' title="View Details"><i class='fa-solid fa-eye'></i></button>
+                  ${status==='pending'?`<button class='btn btn-sm btn-outline-success approve-appt-btn' data-id='${doc.id}' title="Approve"><i class='fa-solid fa-check'></i></button>`:''}
+                  ${status==='pending'?`<button class='btn btn-sm btn-outline-danger reject-appt-btn' data-id='${doc.id}' title="Reject"><i class='fa-solid fa-xmark'></i></button>`:''}
+                  ${status==='approved'?`<button class='btn btn-sm btn-outline-info complete-appt-btn' data-id='${doc.id}' title="Mark Complete"><i class='fa-solid fa-check-double'></i></button>`:''}
+                  <button class='btn btn-sm btn-outline-primary write-prescription-btn' data-id='${doc.id}' title="Write Prescription"><i class='fa-solid fa-prescription-bottle-medical'></i></button>
+                </div>
           </td>
         </tr>`;
+          
+          console.log('Adding upcoming row HTML:', rowHtml);
+          try {
+            apptTbodyUpcoming.innerHTML += rowHtml;
+            console.log('Upcoming row added successfully');
+          } catch (err) {
+            console.error('Error adding upcoming row to table:', err);
+          }
       });
 
-      // Attach listeners
-      document.querySelectorAll('.view-appt-btn').forEach(btn=>{
-        btn.onclick = onViewAppointment;
-      });
-      document.querySelectorAll('.approve-appt-btn').forEach(btn=>{
-        btn.onclick = onApproveAppointment;
-      });
-      document.querySelectorAll('.reject-appt-btn').forEach(btn=>{
-        btn.onclick = onRejectAppointment;
-      });
-        document.querySelectorAll('.write-prescription-btn').forEach(btn=>{
-          btn.onclick = onWritePrescription;
+              // Attach listeners with immediate debugging
+        const viewBtns = document.querySelectorAll('.view-appt-btn');
+        const approveBtns = document.querySelectorAll('.approve-appt-btn');
+        const rejectBtns = document.querySelectorAll('.reject-appt-btn');
+        const prescriptionBtns = document.querySelectorAll('.write-prescription-btn');
+        const completeBtns = document.querySelectorAll('.complete-appt-btn');
+        
+        console.log('Found buttons:', {
+          view: viewBtns.length,
+          approve: approveBtns.length,
+          reject: rejectBtns.length,
+          prescription: prescriptionBtns.length,
+          complete: completeBtns.length
         });
-        document.querySelectorAll('.complete-appt-btn').forEach(btn=>{
-          btn.onclick = onCompleteAppointment;
+        
+        // Add click handlers with immediate feedback
+        viewBtns.forEach((btn, index) => {
+          console.log(`Attaching view button ${index} with ID:`, btn.getAttribute('data-id'));
+          btn.onclick = function(e) {
+            console.log('View button clicked!', e.currentTarget.getAttribute('data-id'));
+            onViewAppointment(e);
+          };
+        });
+        
+        approveBtns.forEach((btn, index) => {
+          console.log(`Attaching approve button ${index} with ID:`, btn.getAttribute('data-id'));
+          btn.onclick = function(e) {
+            console.log('Approve button clicked!', e.currentTarget.getAttribute('data-id'));
+            onApproveAppointment(e);
+          };
+        });
+        
+        rejectBtns.forEach((btn, index) => {
+          console.log(`Attaching reject button ${index} with ID:`, btn.getAttribute('data-id'));
+          btn.onclick = function(e) {
+            console.log('Reject button clicked!', e.currentTarget.getAttribute('data-id'));
+            onRejectAppointment(e);
+          };
+        });
+        
+        prescriptionBtns.forEach((btn, index) => {
+          console.log(`Attaching prescription button ${index} with ID:`, btn.getAttribute('data-id'));
+          btn.onclick = function(e) {
+            console.log('Prescription button clicked!', e.currentTarget.getAttribute('data-id'));
+            onWritePrescription(e);
+          };
+        });
+        
+        completeBtns.forEach((btn, index) => {
+          console.log(`Attaching complete button ${index} with ID:`, btn.getAttribute('data-id'));
+          btn.onclick = function(e) {
+            console.log('Complete button clicked!', e.currentTarget.getAttribute('data-id'));
+            onCompleteAppointment(e);
+          };
         });
       } catch (err) {
         console.error('Error loading appointments:', err);
@@ -738,11 +1306,37 @@
       }
     };
 
-    async function onViewAppointment(e) {
+              // Custom modal functions for appointment viewing
+    function openCustomViewModal() {
+      const modal = document.getElementById('customViewAppointmentModal');
+      modal.style.display = 'flex';
+      
+      // Add click handler for overlay
+      const overlay = modal.querySelector('.custom-modal-overlay');
+      overlay.onclick = function() {
+        closeCustomViewModal();
+      };
+    }
+    
+    function closeCustomViewModal() {
+      document.getElementById('customViewAppointmentModal').style.display = 'none';
+    }
+
+        async function onViewAppointment(e) {
+      console.log('onViewAppointment function called!');
       const apptId = e.currentTarget.getAttribute('data-id');
+      console.log('Viewing appointment:', apptId);
+        
+        try {
       const doc = await firebase.firestore().collection('appointments').doc(apptId).get();
-      if (!doc.exists) return;
+          if (!doc.exists) {
+            console.error('Appointment not found');
+            return;
+          }
+          
       const data = doc.data();
+          console.log('Appointment data:', data);
+          
       let html = `<div class='mb-2'><strong>Date/Time:</strong> ${data.date?new Date(data.date).toLocaleString():''}</div>`;
       html += `<div class='mb-2'><strong>Patient:</strong> ${data.patient||''}</div>`;
       html += `<div class='mb-2'><strong>Service:</strong> ${data.service||''}</div>`;
@@ -751,22 +1345,20 @@
       if (data.status==='rejected' && data.rejectionReason) html += `<div class='mb-2 text-danger'><strong>Rejection Reason:</strong> ${data.rejectionReason}</div>`;
       if (data.patientEmail) html += `<div class='mb-2'><strong>Email:</strong> ${data.patientEmail}</div>`;
       if (data.patientPhone) html += `<div class='mb-2'><strong>Phone:</strong> ${data.patientPhone}</div>`;
-      document.getElementById('viewAppointmentBody').innerHTML = html;
-      
-      // Close any existing modals first
-      const existingModal = bootstrap.Modal.getInstance(document.getElementById('viewAppointmentModal'));
-      if (existingModal) {
-        existingModal.hide();
-        setTimeout(() => {
-          const newModal = new bootstrap.Modal(document.getElementById('viewAppointmentModal'));
-          newModal.show();
-        }, 150);
-      } else {
-        const viewModal = new bootstrap.Modal(document.getElementById('viewAppointmentModal'));
-      viewModal.show();
-      }
+          
+          document.getElementById('customViewAppointmentBody').innerHTML = html;
+          
+          // Show custom modal
+          openCustomViewModal();
+          console.log('Custom modal should be visible now');
+          
+        } catch (err) {
+          console.error('Error viewing appointment:', err);
+          alert('Error loading appointment details. Please try again.');
+        }
     }
     async function onApproveAppointment(e) {
+      console.log('onApproveAppointment function called!');
       const apptId = e.currentTarget.getAttribute('data-id');
       try {
         await firebase.firestore().collection('appointments').doc(apptId).update({ status: 'approved', rejectionReason: '' });
@@ -777,6 +1369,7 @@
       }
     }
     function onRejectAppointment(e) {
+      console.log('onRejectAppointment function called!');
       const apptId = e.currentTarget.getAttribute('data-id');
       rejectIdInput.value = apptId;
       rejectReasonInput.value = '';
@@ -784,6 +1377,7 @@
     }
     
     async function onCompleteAppointment(e) {
+      console.log('onCompleteAppointment function called!');
       const apptId = e.currentTarget.getAttribute('data-id');
       try {
         await firebase.firestore().collection('appointments').doc(apptId).update({ status: 'completed' });
@@ -795,6 +1389,7 @@
     }
     
     async function onWritePrescription(e) {
+      console.log('onWritePrescription function called!');
       const apptId = e.currentTarget.getAttribute('data-id');
       const doc = await firebase.firestore().collection('appointments').doc(apptId).get();
       if (!doc.exists) return;
@@ -949,8 +1544,13 @@
     }
 
     // Initial load and tab logic
+      console.log('Starting initial appointment load...');
+      try {
     loadDoctorAppointments();
     apptTabs.show(); // Ensure the first tab is active
+      } catch (err) {
+        console.error('Error in initial appointment load:', err);
+      }
 
     // Handle tab changes
     document.getElementById('apptTabs').addEventListener('shown.bs.tab', function (event) {
@@ -1058,45 +1658,98 @@
 
     // Upload Lab Results logic
     const uploadLabBtn = document.getElementById('uploadLabBtn');
-    const uploadLabModal = new bootstrap.Modal(document.getElementById('uploadLabModal'));
-    const uploadLabForm = document.getElementById('uploadLabForm');
-    const labPatientSelect = document.getElementById('labPatient');
-    const labTestTypeInput = document.getElementById('labTestType');
-    const labResultsTextarea = document.getElementById('labResults');
-    const labDateInput = document.getElementById('labDate');
-    const labFileInput = document.getElementById('labFile');
     const exportCsvBtn = document.getElementById('exportCsvBtn');
 
-    // Populate patient dropdown for lab results
-    async function populateLabPatientDropdown() {
-      labPatientSelect.innerHTML = '<option value="">Loading patients...</option>';
-      try {
-        const snap = await firebase.firestore().collection('patients').where('doctorId', '==', currentDoctor.uid).get();
-        let options = '<option value="">Select patient</option>';
-      snap.forEach(doc => {
-          const data = doc.data();
-          options += `<option value="${doc.id}">${data.firstName} ${data.lastName} (${data.phone})</option>`;
-        });
-        labPatientSelect.innerHTML = options;
-      } catch (err) {
-        console.error('Error populating patient dropdown:', err);
-        labPatientSelect.innerHTML = '<option value="">Error loading patients</option>';
+      // Custom Modal Functions
+      function openCustomUploadModal() {
+        console.log('Opening custom upload modal...');
+        const modal = document.getElementById('customUploadLabModal');
+        if (modal) {
+          console.log('Modal found, opening...');
+          modal.style.display = 'flex';
+          populateCustomLabPatientDropdown();
+          const form = document.getElementById('customUploadLabForm');
+          if (form) {
+            form.reset();
+          }
+          
+          // Add click handler for overlay
+          const overlay = modal.querySelector('.custom-modal-overlay');
+          overlay.onclick = function() {
+            closeCustomUploadModal();
+          };
+          
+          // Focus on first input
+          setTimeout(() => {
+            const firstInput = document.getElementById('customLabPatient');
+            if (firstInput) firstInput.focus();
+          }, 100);
+        } else {
+          console.error('Custom upload modal not found!');
+          alert('Modal element not found! Check HTML structure.');
+        }
       }
-    }
+      
+      function closeCustomUploadModal() {
+        console.log('Closing custom upload modal...');
+        const modal = document.getElementById('customUploadLabModal');
+        if (modal) {
+          modal.style.display = 'none';
+        }
+      }
 
-    // Upload Lab Results logic
-    uploadLabBtn.onclick = async function() {
-      await populateLabPatientDropdown(); // Populate patient dropdown
-      uploadLabForm.reset();
-      uploadLabModal.show();
-    };
-    uploadLabForm.onsubmit = async function(e) {
+          // Populate patient dropdown for custom modal
+      async function populateCustomLabPatientDropdown() {
+        const customLabPatientSelect = document.getElementById('customLabPatient');
+        customLabPatientSelect.innerHTML = '<option value="">Loading patients...</option>';
+        try {
+          const snap = await firebase.firestore().collection('patients').where('doctorId', '==', currentDoctor.uid).get();
+          let options = '<option value="">Select patient</option>';
+          
+          // Add some test options if no patients found
+          if (snap.empty) {
+            options += '<option value="test1">Test Patient 1 (123-456-7890)</option>';
+            options += '<option value="test2">Test Patient 2 (098-765-4321)</option>';
+          } else {
+      snap.forEach(doc => {
+              const data = doc.data();
+              options += `<option value="${doc.id}">${data.firstName} ${data.lastName} (${data.phone})</option>`;
+            });
+          }
+          
+          customLabPatientSelect.innerHTML = options;
+          console.log('Custom patient dropdown populated successfully');
+        } catch (err) {
+          console.error('Error populating custom patient dropdown:', err);
+          customLabPatientSelect.innerHTML = '<option value="">Error loading patients</option>';
+        }
+      }
+
+          // Upload Lab Results logic - using custom modal
+      if (uploadLabBtn) {
+        uploadLabBtn.onclick = function() {
+          console.log('Upload button clicked');
+          // Simple test - show alert first
+          alert('Upload button clicked! Modal should open next.');
+          openCustomUploadModal();
+        };
+      } else {
+        console.error('Upload lab button not found!');
+      }
+      // Custom form submission
+      const customUploadForm = document.getElementById('customUploadLabForm');
+      if (customUploadForm) {
+        customUploadForm.onsubmit = async function(e) {
       e.preventDefault();
-      const patientId = labPatientSelect.value;
-      const testType = labTestTypeInput.value;
-      const results = labResultsTextarea.value;
-      const testDate = labDateInput.value;
-      const file = labFileInput.files[0];
+          console.log('Custom form submitted');
+          
+          const patientId = document.getElementById('customLabPatient').value;
+          const testType = document.getElementById('customLabTestType').value;
+          const results = document.getElementById('customLabResults').value;
+          const testDate = document.getElementById('customLabDate').value;
+          const file = document.getElementById('customLabFile').files[0];
+
+          console.log('Custom form values:', { patientId, testType, results, testDate, file });
 
       if (!patientId || !testType || !testDate) {
         showDocApptToast('Please select a patient, test type, and test date.', true);
@@ -1119,13 +1772,17 @@
           createdAt: firebase.firestore.FieldValue.serverTimestamp()
         });
 
-        showDocApptToast('Lab result uploaded!');
-        uploadLabModal.hide();
-        loadDoctorAppointments(); // Refresh appointments to show new lab result
+                  showDocApptToast('Lab result uploaded successfully!');
+          closeCustomUploadModal();
+          loadDoctorAppointments(); // Refresh appointments to show new lab result
       } catch (err) {
-        showDocApptToast(err.message||'Error uploading lab result.', true);
+          console.error('Error uploading lab result:', err);
+          showDocApptToast(err.message || 'Error uploading lab result.', true);
       }
     };
+      } else {
+        console.error('Custom upload form not found!');
+      }
     // Export to CSV logic
     exportCsvBtn.onclick = function() {
       // Gather visible rows from the current table view
