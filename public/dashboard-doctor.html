@@ -446,6 +446,9 @@
             <li class="nav-item" role="presentation">
               <button class="nav-link" id="upcoming-tab" data-bs-toggle="tab" data-bs-target="#upcoming" type="button" role="tab">Upcoming</button>
             </li>
+            <li class="nav-item" role="presentation">
+              <button class="nav-link" id="previous-tab" data-bs-toggle="tab" data-bs-target="#previous" type="button" role="tab">Previous</button>
+            </li>
           </ul>
           <div class="d-flex mb-2 gap-2 align-items-center">
             <select class="form-select w-auto" id="statusFilter" title="Filter by status">
@@ -473,7 +476,7 @@
                     </tr>
                   </thead>
                   <tbody id="doctor-appointments-tbody-today">
-                    <tr><td colspan="6" class="text-center text-muted">Loading appointments...</td></tr>
+                    <tr><td colspan="7" class="text-center text-muted">Loading appointments...</td></tr>
                   </tbody>
                 </table>
               </div>
@@ -492,6 +495,25 @@
                     </tr>
                   </thead>
                   <tbody id="doctor-appointments-tbody-upcoming">
+                    <tr><td colspan="6" class="text-center text-muted">Loading appointments...</td></tr>
+                  </tbody>
+                </table>
+              </div>
+            </div>
+            <div class="tab-pane fade" id="previous" role="tabpanel">
+              <div class="table-responsive mb-3">
+                <table class="table table-hover align-middle" id="doctor-appointments-table-previous">
+                  <thead class="table-light sticky-top">
+                    <tr>
+                      <th>Date/Time</th>
+                      <th>Patient</th>
+                      <th>Service</th>
+                      <th>Status</th>
+                      <th>Notes</th>
+                      <th>Actions</th>
+                    </tr>
+                  </thead>
+                  <tbody id="doctor-appointments-tbody-previous">
                     <tr><td colspan="6" class="text-center text-muted">Loading appointments...</td></tr>
                   </tbody>
                 </table>
@@ -778,16 +800,25 @@
       }
     });
     // --- Doctor Appointments Logic ---
+    
+    // Check if Bootstrap is loaded
+    if (typeof bootstrap === 'undefined') {
+      console.error('Bootstrap is not loaded. Please ensure bootstrap.bundle.min.js is included.');
+    }
+    
     const apptTbodyToday = document.getElementById('doctor-appointments-tbody-today');
     const apptTbodyUpcoming = document.getElementById('doctor-appointments-tbody-upcoming');
-    const viewModal = new bootstrap.Modal(document.getElementById('viewAppointmentModal'));
-    const rejectModal = new bootstrap.Modal(document.getElementById('rejectAppointmentModal'));
+    const apptTbodyPrevious = document.getElementById('doctor-appointments-tbody-previous');
+    // Only create Bootstrap modals for elements that exist and Bootstrap is loaded
+    const rejectModalElement = document.getElementById('rejectAppointmentModal');
+    const rejectModal = rejectModalElement && typeof bootstrap !== 'undefined' ? new bootstrap.Modal(rejectModalElement) : null;
     const rejectForm = document.getElementById('rejectAppointmentForm');
     const rejectIdInput = document.getElementById('rejectAppointmentId');
     const rejectReasonInput = document.getElementById('rejectReason');
     const statusFilterSelect = document.getElementById('statusFilter');
     const searchInput = document.getElementById('searchInput');
-    const apptTabs = new bootstrap.Tab(document.getElementById('apptTabs'));
+    const apptTabsElement = document.getElementById('apptTabs');
+    const apptTabs = apptTabsElement && typeof bootstrap !== 'undefined' ? new bootstrap.Tab(apptTabsElement) : null;
     const selectAllApptsCheckbox = document.getElementById('selectAllAppts');
     const bulkActionsBar = document.getElementById('bulkActionsBar');
     const bulkApproveBtn = document.getElementById('bulkApproveBtn');
@@ -855,12 +886,14 @@
           info.el.style.borderColor = color;
           
           // Add tooltip
-          const tooltip = new bootstrap.Tooltip(info.el, {
-            title: `${event.title}\nStatus: ${status}\nTime: ${event.start.toLocaleTimeString()}`,
-            placement: 'top',
-            trigger: 'hover',
-            container: 'body'
-          });
+          if (typeof bootstrap.Tooltip !== 'undefined') {
+            const tooltip = new bootstrap.Tooltip(info.el, {
+              title: `${event.title}\nStatus: ${status}\nTime: ${event.start.toLocaleTimeString()}`,
+              placement: 'top',
+              trigger: 'hover',
+              container: 'body'
+            });
+          }
         },
         events: async function(info, successCallback, failureCallback) {
           try {
@@ -934,8 +967,10 @@
     }
     let currentDoctor = null;
     firebase.auth().onAuthStateChanged(async function(user) {
+      console.log('Auth state changed:', user ? 'User logged in' : 'No user');
       if (user) {
         currentDoctor = user;
+        console.log('Current doctor set:', currentDoctor.uid);
         
         // Update doctor name in the topbar
         try {
@@ -951,16 +986,22 @@
           console.error('Error fetching doctor name:', err);
         }
         
+        console.log('Calling loadDoctorAppointments...');
         loadDoctorAppointments();
       } else {
+        console.log('No user, redirecting to login');
         window.location.href = 'login.html';
       }
     });
 
     async function loadDoctorAppointments() {
+      console.log('loadDoctorAppointments function called');
       try {
-        if (!apptTbodyToday || !apptTbodyUpcoming) {
+        if (!apptTbodyToday || !apptTbodyUpcoming || !apptTbodyPrevious) {
           console.error('Appointment table elements not found');
+          console.error('apptTbodyToday:', apptTbodyToday);
+          console.error('apptTbodyUpcoming:', apptTbodyUpcoming);
+          console.error('apptTbodyPrevious:', apptTbodyPrevious);
           return;
         }
         
@@ -968,6 +1009,7 @@
         
         apptTbodyToday.innerHTML = '<tr><td colspan="7" class="text-center text-muted">Loading appointments...</td></tr>';
         apptTbodyUpcoming.innerHTML = '<tr><td colspan="6" class="text-center text-muted">Loading appointments...</td></tr>';
+        apptTbodyPrevious.innerHTML = '<tr><td colspan="6" class="text-center text-muted">Loading appointments...</td></tr>';
         
         const now = new Date();
         const today = new Date(now.getFullYear(), now.getMonth(), now.getDate());
@@ -975,59 +1017,87 @@
         tomorrow.setDate(tomorrow.getDate() + 1);
         
         // Get all appointments for this doctor
+        console.log('Querying appointments for doctor ID:', currentDoctor.uid);
         const allAppointmentsSnap = await firebase.firestore().collection('appointments')
           .where('doctorId', '==', currentDoctor.uid)
           .get();
         
         console.log('Total appointments found for doctor:', allAppointmentsSnap.size);
+        console.log('Query result:', allAppointmentsSnap);
         
         if (allAppointmentsSnap.empty) {
           console.log('No appointments found, creating test appointments...');
           
-          // Create test appointments
-          const testAppointments = [
-            {
-              patient: 'John Doe',
-              service: 'General Checkup',
-              date: firebase.firestore.Timestamp.fromDate(new Date(Date.now() + 2 * 60 * 60 * 1000)), // 2 hours from now
-              status: 'pending',
-              notes: 'Regular checkup',
-              doctorId: currentDoctor.uid
-            },
-            {
-              patient: 'Jane Smith',
-              service: 'Blood Test',
-              date: firebase.firestore.Timestamp.fromDate(new Date(Date.now() + 24 * 60 * 60 * 1000)), // Tomorrow
-              status: 'approved',
-              notes: 'Fasting required',
-              doctorId: currentDoctor.uid
-            },
-            {
-              patient: 'Mike Johnson',
-              service: 'Consultation',
-              date: firebase.firestore.Timestamp.fromDate(new Date(Date.now() + 3 * 24 * 60 * 60 * 1000)), // 3 days from now
-              status: 'pending',
-              notes: 'Follow-up appointment',
-              doctorId: currentDoctor.uid
+          try {
+            // Create test appointments
+            const testAppointments = [
+              {
+                patient: 'John Doe',
+                service: 'General Checkup',
+                date: firebase.firestore.Timestamp.fromDate(new Date(Date.now() + 2 * 60 * 60 * 1000)), // 2 hours from now
+                status: 'pending',
+                notes: 'Regular checkup',
+                doctorId: currentDoctor.uid
+              },
+              {
+                patient: 'Jane Smith',
+                service: 'Blood Test',
+                date: firebase.firestore.Timestamp.fromDate(new Date(Date.now() + 24 * 60 * 60 * 1000)), // Tomorrow
+                status: 'approved',
+                notes: 'Fasting required',
+                doctorId: currentDoctor.uid
+              },
+              {
+                patient: 'Mike Johnson',
+                service: 'Consultation',
+                date: firebase.firestore.Timestamp.fromDate(new Date(Date.now() + 3 * 24 * 60 * 60 * 1000)), // 3 days from now
+                status: 'pending',
+                notes: 'Follow-up appointment',
+                doctorId: currentDoctor.uid
+              },
+              {
+                patient: 'Sarah Wilson',
+                service: 'Dental Cleaning',
+                date: firebase.firestore.Timestamp.fromDate(new Date(Date.now() - 2 * 24 * 60 * 60 * 1000)), // 2 days ago
+                status: 'completed',
+                notes: 'Regular dental cleaning completed',
+                doctorId: currentDoctor.uid
+              },
+              {
+                patient: 'Robert Brown',
+                service: 'Eye Exam',
+                date: firebase.firestore.Timestamp.fromDate(new Date(Date.now() - 7 * 24 * 60 * 60 * 1000)), // 1 week ago
+                status: 'completed',
+                notes: 'Eye exam completed, prescription updated',
+                doctorId: currentDoctor.uid
+              }
+            ];
+            
+            for (const appointment of testAppointments) {
+              await firebase.firestore().collection('appointments').add(appointment);
             }
-          ];
-          
-          for (const appointment of testAppointments) {
-            await firebase.firestore().collection('appointments').add(appointment);
+            
+            console.log('Test appointments created successfully');
+            // Reload appointments after creating test data
+            setTimeout(() => {
+              loadDoctorAppointments();
+            }, 1000);
+            
+            return;
+          } catch (createError) {
+            console.error('Error creating test appointments:', createError);
+            // Show error in the table instead of leaving "Loading..."
+            apptTbodyToday.innerHTML = '<tr><td colspan="7" class="text-center text-danger">No appointments found. Error creating test data.</td></tr>';
+            apptTbodyUpcoming.innerHTML = '<tr><td colspan="6" class="text-center text-danger">No appointments found. Error creating test data.</td></tr>';
+            apptTbodyPrevious.innerHTML = '<tr><td colspan="6" class="text-center text-danger">No appointments found. Error creating test data.</td></tr>';
+            return;
           }
-          
-          console.log('Test appointments created successfully');
-          // Reload appointments after creating test data
-          setTimeout(() => {
-            loadDoctorAppointments();
-          }, 1000);
-          
-          return;
         }
         
         // Process appointments
         const todayAppointments = [];
         const upcomingAppointments = [];
+        const previousAppointments = [];
         
         allAppointmentsSnap.forEach(doc => {
           const data = doc.data();
@@ -1053,6 +1123,9 @@
               todayAppointments.push({ doc, data, date: appointmentDate });
             } else if (appointmentDate > now) {
               upcomingAppointments.push({ doc, data, date: appointmentDate });
+            } else {
+              // Past appointments
+              previousAppointments.push({ doc, data, date: appointmentDate });
             }
           }
         });
@@ -1060,9 +1133,11 @@
         // Sort appointments by date
         todayAppointments.sort((a, b) => a.date - b.date);
         upcomingAppointments.sort((a, b) => a.date - b.date);
+        previousAppointments.sort((a, b) => b.date - a.date); // Most recent first
         
         console.log('Today appointments:', todayAppointments.length);
         console.log('Upcoming appointments:', upcomingAppointments.length);
+        console.log('Previous appointments:', previousAppointments.length);
         
         // Render today appointments
         apptTbodyToday.innerHTML = '';
@@ -1159,6 +1234,43 @@
           });
         }
         
+        // Render previous appointments
+        apptTbodyPrevious.innerHTML = '';
+        if (previousAppointments.length === 0) {
+          apptTbodyPrevious.innerHTML = '<tr><td colspan="6" class="text-center text-muted">No previous appointments</td></tr>';
+        } else {
+          previousAppointments.forEach(({ doc, data, date }) => {
+            const dateStr = date ? date.toLocaleString() : 'No date';
+            const patient = data.patient || '';
+            const service = data.service || '';
+            const status = data.status || '';
+            const notes = data.notes || '';
+            const reason = data.rejectionReason || '';
+            
+            let statusClass = 'secondary';
+            if (status === 'pending') statusClass = 'warning';
+            else if (status === 'approved') statusClass = 'success';
+            else if (status === 'rejected') statusClass = 'danger';
+            else if (status === 'completed') statusClass = 'info';
+            
+            const rowHtml = `<tr>
+              <td>${dateStr}</td>
+              <td>${patient}</td>
+              <td>${service}</td>
+              <td><span class="badge bg-${statusClass} text-capitalize">${status}</span>${status==='rejected'&&reason?`<br><small class='text-danger'>${reason}</small>`:''}</td>
+              <td>${notes}</td>
+              <td>
+                <div class="action-buttons">
+                  <button class='btn btn-sm btn-outline-info view-appt-btn' data-id='${doc.id}' title="View Details"><i class='fa-solid fa-eye'></i></button>
+                  <button class='btn btn-sm btn-outline-primary write-prescription-btn' data-id='${doc.id}' title="Write Prescription"><i class='fa-solid fa-prescription-bottle-medical'></i></button>
+                </div>
+              </td>
+            </tr>`;
+            
+            apptTbodyPrevious.innerHTML += rowHtml;
+          });
+        }
+        
         // Attach event listeners
         const viewBtns = document.querySelectorAll('.view-appt-btn');
         const approveBtns = document.querySelectorAll('.approve-appt-btn');
@@ -1209,6 +1321,7 @@
         console.error('Error loading appointments:', err);
         if (apptTbodyToday) apptTbodyToday.innerHTML = '<tr><td colspan="7" class="text-center text-danger">Error loading appointments</td></tr>';
         if (apptTbodyUpcoming) apptTbodyUpcoming.innerHTML = '<tr><td colspan="6" class="text-center text-danger">Error loading appointments</td></tr>';
+        if (apptTbodyPrevious) apptTbodyPrevious.innerHTML = '<tr><td colspan="6" class="text-center text-danger">Error loading appointments</td></tr>';
       }
     };
 
@@ -1315,15 +1428,21 @@
       document.getElementById('prescriptionNotes').value = '';
       
       // Show the prescription modal
-      const existingPrescriptionModal = bootstrap.Modal.getInstance(document.getElementById('writePrescriptionModal'));
+      const prescriptionModalElement = document.getElementById('writePrescriptionModal');
+      if (!prescriptionModalElement) {
+        console.error('Prescription modal element not found');
+        return;
+      }
+      
+      const existingPrescriptionModal = bootstrap.Modal.getInstance(prescriptionModalElement);
       if (existingPrescriptionModal) {
         existingPrescriptionModal.hide();
         setTimeout(() => {
-          const prescriptionModal = new bootstrap.Modal(document.getElementById('writePrescriptionModal'));
+          const prescriptionModal = new bootstrap.Modal(prescriptionModalElement);
           prescriptionModal.show();
         }, 150);
       } else {
-        const prescriptionModal = new bootstrap.Modal(document.getElementById('writePrescriptionModal'));
+        const prescriptionModal = new bootstrap.Modal(prescriptionModalElement);
         prescriptionModal.show();
       }
     }
@@ -1378,7 +1497,7 @@
         
         // Hide the modal
         const prescriptionModal = bootstrap.Modal.getInstance(document.getElementById('writePrescriptionModal'));
-        prescriptionModal.hide();
+        if (prescriptionModal) prescriptionModal.hide();
         
       } catch (err) {
         showDocApptToast('Failed to save prescription: ' + err.message, true);
@@ -1391,7 +1510,7 @@
       try {
         await firebase.firestore().collection('appointments').doc(apptId).update({ status: 'rejected', rejectionReason: reason });
         showDocApptToast('Appointment rejected.');
-        rejectModal.hide();
+        if (rejectModal) rejectModal.hide();
         loadDoctorAppointments();
       } catch (err) {
         showDocApptToast(err.message||'Error rejecting appointment.', true);
@@ -1468,10 +1587,13 @@
     document.getElementById('apptTabs').addEventListener('shown.bs.tab', function (event) {
       const target = event.target;
       if (target.id === 'today-tab') {
-        apptTbodyToday.innerHTML = '<tr><td colspan="6" class="text-center text-muted">Loading appointments...</td></tr>';
+        apptTbodyToday.innerHTML = '<tr><td colspan="7" class="text-center text-muted">Loading appointments...</td></tr>';
         loadDoctorAppointments();
       } else if (target.id === 'upcoming-tab') {
         apptTbodyUpcoming.innerHTML = '<tr><td colspan="6" class="text-center text-muted">Loading appointments...</td></tr>';
+        loadDoctorAppointments();
+      } else if (target.id === 'previous-tab') {
+        apptTbodyPrevious.innerHTML = '<tr><td colspan="6" class="text-center text-muted">Loading appointments...</td></tr>';
         loadDoctorAppointments();
       }
     });
