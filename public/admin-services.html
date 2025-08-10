@@ -359,8 +359,145 @@
         window.location.href = 'login.html';
       } else {
         console.log('Logged in as:', user.email);
+        // Check if user is admin
+        firebase.firestore().collection('users').doc(user.uid).get().then(doc => {
+          if (doc.exists && doc.data().role === 'admin') {
+            loadServices();
+          } else {
+            alert('Access denied. Admin privileges required.');
+            window.location.href = 'dashboard.html';
+          }
+        });
       }
     });
+
+    // Service management functionality
+    let currentUser = null;
+    let services = [];
+
+    // Load all services
+    function loadServices() {
+      const tbody = document.getElementById('services-table-body');
+      tbody.innerHTML = '<tr><td colspan="4" class="text-center">Loading services...</td></tr>';
+      
+      firebase.firestore().collection('services').get().then(snapshot => {
+        services = snapshot.docs.map(doc => ({...doc.data(), id: doc.id}));
+        
+        if (services.length === 0) {
+          tbody.innerHTML = '<tr><td colspan="4" class="text-center">No services found</td></tr>';
+          return;
+        }
+        
+        tbody.innerHTML = services.map(service => `
+          <tr>
+            <td>${service.name || 'N/A'}</td>
+            <td>${service.description || 'N/A'}</td>
+            <td>₵${parseFloat(service.price || 0).toFixed(2)}</td>
+            <td>
+              <button class="btn btn-sm btn-primary" onclick="editService('${service.id}')">Edit</button>
+              <button class="btn btn-sm btn-danger" onclick="deleteService('${service.id}')">Delete</button>
+            </td>
+          </tr>
+        `).join('');
+      }).catch(error => {
+        console.error('Error loading services:', error);
+        tbody.innerHTML = '<tr><td colspan="4" class="text-center text-danger">Error loading services</td></tr>';
+      });
+    }
+
+    // Add service
+    document.getElementById('add-service-form').addEventListener('submit', function(e) {
+      e.preventDefault();
+      
+      const formData = new FormData(e.target);
+      const serviceData = {
+        name: formData.get('service-name'),
+        description: formData.get('service-description'),
+        price: parseFloat(formData.get('service-price')),
+        createdAt: firebase.firestore.FieldValue.serverTimestamp()
+      };
+      
+      firebase.firestore().collection('services').add(serviceData).then(() => {
+        showToast('Service added successfully!');
+        e.target.reset();
+        $('#addServiceModal').modal('hide');
+        loadServices();
+      }).catch(error => {
+        showToast('Error adding service: ' + error.message, true);
+      });
+    });
+
+    // Edit service
+    function editService(serviceId) {
+      const service = services.find(s => s.id === serviceId);
+      if (!service) return;
+      
+      document.getElementById('edit-service-id').value = serviceId;
+      document.getElementById('edit-service-name').value = service.name || '';
+      document.getElementById('edit-service-description').value = service.description || '';
+      document.getElementById('edit-service-price').value = service.price || 0;
+      
+      $('#editServiceModal').modal('show');
+    }
+
+    // Save service changes
+    document.getElementById('edit-service-form').addEventListener('submit', function(e) {
+      e.preventDefault();
+      
+      const serviceId = document.getElementById('edit-service-id').value;
+      const formData = new FormData(e.target);
+      
+      const updateData = {
+        name: formData.get('edit-service-name'),
+        description: formData.get('edit-service-description'),
+        price: parseFloat(formData.get('edit-service-price')),
+        updatedAt: firebase.firestore.FieldValue.serverTimestamp()
+      };
+      
+      firebase.firestore().collection('services').doc(serviceId).update(updateData).then(() => {
+        showToast('Service updated successfully!');
+        $('#editServiceModal').modal('hide');
+        loadServices();
+      }).catch(error => {
+        showToast('Error updating service: ' + error.message, true);
+      });
+    });
+
+    // Delete service
+    function deleteService(serviceId) {
+      const service = services.find(s => s.id === serviceId);
+      if (!service) return;
+      
+      document.getElementById('delete-service-info').innerHTML = `
+        <strong>Name:</strong> ${service.name || 'N/A'}<br>
+        <strong>Description:</strong> ${service.description || 'N/A'}<br>
+        <strong>Price:</strong> ₵${parseFloat(service.price || 0).toFixed(2)}
+      `;
+      
+      document.getElementById('confirm-delete-service').onclick = function() {
+        firebase.firestore().collection('services').doc(serviceId).delete().then(() => {
+          showToast('Service deleted successfully!');
+          $('#deleteServiceModal').modal('hide');
+          loadServices();
+        }).catch(error => {
+          showToast('Error deleting service: ' + error.message, true);
+        });
+      };
+      
+      $('#deleteServiceModal').modal('show');
+    }
+
+    // Show toast message
+    function showToast(message, isError = false) {
+      const toast = document.getElementById('admin-toast');
+      const toastBody = document.getElementById('admin-toast-body');
+      
+      toast.className = `toast align-items-center text-bg-${isError ? 'danger' : 'primary'} border-0`;
+      toastBody.textContent = message;
+      
+      const bsToast = new bootstrap.Toast(toast);
+      bsToast.show();
+    }
   </script>
 </body>
 </html> 
