@@ -420,7 +420,7 @@
       firebase.firestore().collection('services').add(serviceData).then(() => {
         showToast('Service added successfully!');
         e.target.reset();
-        $('#addServiceModal').modal('hide');
+        bootstrap.Modal.getInstance(document.getElementById('addServiceModal')).hide();
         loadServices();
       }).catch(error => {
         showToast('Error adding service: ' + error.message, true);
@@ -437,7 +437,7 @@
       document.getElementById('edit-service-description').value = service.description || '';
       document.getElementById('edit-service-price').value = service.price || 0;
       
-      $('#editServiceModal').modal('show');
+      new bootstrap.Modal(document.getElementById('editServiceModal')).show();
     }
 
     // Save service changes
@@ -456,10 +456,10 @@
       
       firebase.firestore().collection('services').doc(serviceId).update(updateData).then(() => {
         showToast('Service updated successfully!');
-        $('#editServiceModal').modal('hide');
+        bootstrap.Modal.getInstance(document.getElementById('editServiceModal')).hide();
         loadServices();
       }).catch(error => {
-        showToast('Error updating service: ' + error.message, true);
+        showToast('Error adding service: ' + error.message, true);
       });
     });
 
@@ -477,14 +477,14 @@
       document.getElementById('confirm-delete-service').onclick = function() {
         firebase.firestore().collection('services').doc(serviceId).delete().then(() => {
           showToast('Service deleted successfully!');
-          $('#deleteServiceModal').modal('hide');
+          bootstrap.Modal.getInstance(document.getElementById('deleteServiceModal')).hide();
           loadServices();
         }).catch(error => {
           showToast('Error deleting service: ' + error.message, true);
         });
       };
       
-      $('#deleteServiceModal').modal('show');
+      new bootstrap.Modal(document.getElementById('deleteServiceModal')).show();
     }
 
     // Show toast message
