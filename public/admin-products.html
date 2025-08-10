@@ -336,6 +336,157 @@
     document.getElementById('admin-profile-link').onclick = function() {
       window.location.href = 'admin-profile.html';
     };
+
+    // Product management functionality
+    let currentUser = null;
+    let products = [];
+
+    // Check authentication
+    firebase.auth().onAuthStateChanged(function(user) {
+      if (user) {
+        currentUser = user;
+        // Check if user is admin
+        firebase.firestore().collection('users').doc(user.uid).get().then(doc => {
+          if (doc.exists && doc.data().role === 'admin') {
+            loadProducts();
+          } else {
+            alert('Access denied. Admin privileges required.');
+            window.location.href = 'dashboard.html';
+          }
+        });
+      } else {
+        window.location.href = 'login.html';
+      }
+    });
+
+    // Load all products
+    function loadProducts() {
+      const tbody = document.getElementById('products-table-body');
+      tbody.innerHTML = '<tr><td colspan="5" class="text-center">Loading products...</td></tr>';
+      
+      firebase.firestore().collection('products').get().then(snapshot => {
+        products = snapshot.docs.map(doc => ({...doc.data(), id: doc.id}));
+        
+        if (products.length === 0) {
+          tbody.innerHTML = '<tr><td colspan="5" class="text-center">No products found</td></tr>';
+          return;
+        }
+        
+        tbody.innerHTML = products.map(product => `
+          <tr>
+            <td>${product.name || 'N/A'}</td>
+            <td>${product.category || 'N/A'}</td>
+            <td>₵${parseFloat(product.price || 0).toFixed(2)}</td>
+            <td>${product.stock || 0}</td>
+            <td>
+              <button class="btn btn-sm btn-primary" onclick="editProduct('${product.id}')">Edit</button>
+              <button class="btn btn-sm btn-danger" onclick="deleteProduct('${product.id}')">Delete</button>
+            </td>
+          </tr>
+        `).join('');
+      }).catch(error => {
+        console.error('Error loading products:', error);
+        tbody.innerHTML = '<tr><td colspan="5" class="text-center text-danger">Error loading products</td></tr>';
+      });
+    }
+
+    // Add product
+    document.getElementById('add-product-form').addEventListener('submit', function(e) {
+      e.preventDefault();
+      
+      const formData = new FormData(e.target);
+      const productData = {
+        name: formData.get('product-name'),
+        category: formData.get('product-category'),
+        price: parseFloat(formData.get('product-price')),
+        stock: parseInt(formData.get('product-stock')),
+        createdAt: firebase.firestore.FieldValue.serverTimestamp()
+      };
+      
+      firebase.firestore().collection('products').add(productData).then(() => {
+        showToast('Product added successfully!');
+        e.target.reset();
+        $('#addProductModal').modal('hide');
+        loadProducts();
+      }).catch(error => {
+        showToast('Error adding product: ' + error.message, true);
+      });
+    });
+
+    // Edit product
+    function editProduct(productId) {
+      const product = products.find(p => p.id === productId);
+      if (!product) return;
+      
+      document.getElementById('edit-product-id').value = productId;
+      document.getElementById('edit-product-name').value = product.name || '';
+      document.getElementById('edit-product-category').value = product.category || '';
+      document.getElementById('edit-product-price').value = product.price || 0;
+      document.getElementById('edit-product-stock').value = product.stock || 0;
+      
+      $('#editProductModal').modal('show');
+    }
+
+    // Save product changes
+    document.getElementById('edit-product-form').addEventListener('submit', function(e) {
+      e.preventDefault();
+      
+      const productId = document.getElementById('edit-product-id').value;
+      const formData = new FormData(e.target);
+      
+      const updateData = {
+        name: formData.get('edit-product-name'),
+        category: formData.get('edit-product-category'),
+        price: parseFloat(formData.get('edit-product-price')),
+        stock: parseInt(formData.get('edit-product-stock')),
+        updatedAt: firebase.firestore.FieldValue.serverTimestamp()
+      };
+      
+      firebase.firestore().collection('products').doc(productId).update(updateData).then(() => {
+        showToast('Product updated successfully!');
+        $('#editProductModal').modal('hide');
+        loadProducts();
+      }).catch(error => {
+        showToast('Error updating product: ' + error.message, true);
+      });
+    });
+
+    // Delete product
+    function deleteProduct(productId) {
+      const product = products.find(p => p.id === productId);
+      if (!product) return;
+      
+      document.getElementById('delete-product-info').innerHTML = `
+        <strong>Name:</strong> ${product.name || 'N/A'}<br>
+        <strong>Category:</strong> ${product.category || 'N/A'}<br>
+        <strong>Price:</strong> ₵${parseFloat(product.price || 0).toFixed(2)}<br>
+        <strong>Stock:</strong> ${product.stock || 0}
+      `;
+      
+      document.getElementById('confirm-delete-product').onclick = function() {
+        firebase.firestore().collection('products').doc(productId).delete().then(() => {
+          showToast('Product deleted successfully!');
+          $('#deleteProductModal').modal('hide');
+          loadProducts();
+        }).catch(error => {
+          showToast('Error deleting product: ' + error.message, true);
+        });
+      };
+      
+      $('#deleteProductModal').modal('show');
+    }
+
+    // Show toast message
+    function showToast(message, isError = false) {
+      const toast = document.getElementById('admin-toast');
+      const toastBody = document.getElementById('admin-toast-body');
+      
+      toast.className = `toast align-items-center text-bg-${isError ? 'danger' : 'primary'} border-0`;
+      toastBody.textContent = message;
+      
+      const bsToast = new bootstrap.Toast(toast);
+      bsToast.show();
+    }
   </script>
   <script>
     // Mobile sidebar toggle logic
