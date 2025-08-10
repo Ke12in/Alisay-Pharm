@@ -3,692 +3,1750 @@
 <head>
   <meta charset="UTF-8">
   <meta name="viewport" content="width=device-width, initial-scale=1.0">
-  <title>Sales Dashboard - Alisay Medical Center</title>
+  <title>Doctor Dashboard - Alisay Medical Center</title>
   <!-- Bootstrap CSS -->
   <link href="https://cdn.jsdelivr.net/npm/bootstrap@5.3.2/dist/css/bootstrap.min.css" rel="stylesheet">
-  <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.4.0/css/all.min.css">
+  <link href="https://cdn.jsdelivr.net/npm/fullcalendar@6.1.8/index.global.min.css" rel="stylesheet">
   <style>
+    html, body { height: 100%; }
     body {
       min-height: 100vh;
+      height: 100%;
+      width: 100%;
       background: linear-gradient(135deg, #e0eafc 0%, #cfdef3 100%);
+      display: flex;
+      flex-direction: column;
     }
-    .sidebar {
-      min-width: 220px;
-      max-width: 220px;
+    main {
+      flex: 1 0 auto;
+      display: flex;
+      align-items: center;
+      justify-content: center;
+      min-height: 80vh;
+      width:100%;
+    }
+    .fade-in {
+      opacity: 0;
+      transform: translateY(30px);
+      animation: fadeInUp 1s ease-out 0.2s forwards;
+    }
+    @keyframes fadeInUp {
+      to { opacity: 1; transform: none; }
+    }
+    .card {
+      border: none;
+      border-radius: 1.5rem;
+      box-shadow: 0 8px 32px 0 rgba(31, 38, 135, 0.15);
+      transition: box-shadow 0.3s cubic-bezier(.4,2,.6,1), transform 0.3s cubic-bezier(.4,2,.6,1);
       background: #fff;
-      border-right: 1px solid #e3e3e3;
-      min-height: 100vh;
+    }
+    .card:hover {
+      box-shadow: 0 16px 48px 0 rgba(31, 38, 135, 0.25);
+      transform: translateY(-4px) scale(1.01);
+    }
+    .logo {
+      width: 60px;
+      height: 60px;
+      object-fit: contain;
+      margin-bottom: 1rem;
+    }
+    .btn-logout {
+      /* No longer needed for height, handled by .btn-lg-custom */
+    }
+    .btn-lg-custom {
+      padding-top: 0.6rem;
+      padding-bottom: 0.6rem;
+      font-size: 1.1rem;
+      min-width: 140px;
+    }
+    footer { flex-shrink: 0; }
+    .content-area { flex: 1 1 auto; padding: 2rem; background: transparent; min-height: 0; }
+    .sidebar-mobile-overlay { display: none; position: fixed; top: 0; left: 0; right: 0; bottom: 0; background: rgba(0,0,0,0.3); z-index: 1999; }
+    .sidebar-mobile-overlay.active { display: block; }
+    .sidebar-mobile { position: fixed; top: 0; left: 0; width: 220px; height: 100vh; background: #1a237e; color: #fff; display: flex; flex-direction: column; padding: 2rem 1rem 1rem 1rem; box-shadow: 2px 0 8px rgba(31,38,135,0.08); z-index: 2000; transition: transform 0.3s ease; transform: translateX(-100%); }
+    .sidebar-mobile.show { transform: translateX(0); }
+    .sidebar-toggle-btn { display: none; }
+    /* Dashboard Layout Improvements */
+    .dashboard-container {
+      max-width: 1400px;
+      width: 100%;
+      margin: 0 auto;
+      padding: 2rem;
+    }
+    
+    .card {
+      border: none;
+      border-radius: 1.5rem;
+      box-shadow: 0 8px 32px 0 rgba(31, 38, 135, 0.15);
+      transition: box-shadow 0.3s cubic-bezier(.4,2,.6,1), transform 0.3s cubic-bezier(.4,2,.6,1);
+      background: #fff;
+      width: 100%;
+      max-width: none;
+    }
+    
+    /* Responsive table improvements */
+    .table-responsive { 
+      border-radius: 0.5rem;
+      overflow-x: auto;
+      overflow-y: hidden;
+    }
+    
+    .table {
+      min-width: 800px;
+      width: 100%;
+    }
+    
+    /* Make table columns more responsive */
+    .table th,
+    .table td {
+      white-space: nowrap;
+      padding: 0.5rem;
+    }
+    
+    /* Responsive column widths */
+    .table th:nth-child(1), .table td:nth-child(1) { width: 40px; } /* Checkbox */
+    .table th:nth-child(2), .table td:nth-child(2) { width: 150px; } /* Date/Time */
+    .table th:nth-child(3), .table td:nth-child(3) { width: 120px; } /* Patient */
+    .table th:nth-child(4), .table td:nth-child(4) { width: 120px; } /* Service */
+    .table th:nth-child(5), .table td:nth-child(5) { width: 100px; } /* Status */
+    .table th:nth-child(6), .table td:nth-child(6) { width: 150px; } /* Notes */
+    .table th:nth-child(7), .table td:nth-child(7) { width: 200px; } /* Actions */
+    
+    .table {
+      margin-bottom: 0;
+    }
+    
+    .table thead th {
+      background-color: #f8f9fa;
+      border-bottom: 2px solid #dee2e6;
+      font-weight: 600;
+      color: #495057;
+    }
+    
+    .action-buttons { 
+      display: flex; 
+      gap: 0.25rem; 
+      flex-wrap: wrap; 
+      justify-content: flex-start;
+    }
+    
+    .action-buttons .btn { 
+      font-size: 0.75rem; 
+      padding: 0.25rem 0.5rem; 
+      border-radius: 0.375rem;
+      min-width: 28px;
+      height: 28px;
+      display: flex;
+      align-items: center;
+      justify-content: center;
+    }
+    
+    .modal { 
+      z-index: 1055; 
+    }
+    .modal-backdrop { 
+      z-index: 1050; 
+    }
+    
+    /* Ensure modal content is interactive */
+    .modal-content {
+      z-index: 1056;
+      position: relative;
+    }
+    
+    /* Fix form field interactions */
+    .modal .form-control,
+    .modal .form-select {
+      z-index: 1057;
+      position: relative;
+      pointer-events: auto;
+    }
+    
+    /* Ensure buttons are clickable */
+    .modal .btn {
+      z-index: 1057;
+      position: relative;
+      pointer-events: auto;
+    }
+    
+    /* Fix modal backdrop issues */
+    .modal.show {
+      display: block !important;
+    }
+    
+    .modal.show .modal-dialog {
+      pointer-events: auto;
+    }
+    
+    /* Ensure modal buttons are clickable */
+    .modal .btn-close {
+      z-index: 1058;
+      position: relative;
+      pointer-events: auto;
+    }
+    
+    .modal .modal-footer .btn {
+      z-index: 1058;
+      position: relative;
+      pointer-events: auto;
+    }
+    
+    /* Fix modal backdrop interaction */
+    .modal-backdrop {
+      pointer-events: auto;
+    }
+    
+    /* Custom Modal Styles */
+    .custom-modal {
       position: fixed;
       top: 0;
       left: 0;
-      z-index: 1030;
-      padding-top: 60px;
-    }
-    .sidebar .nav-link.active {
-      background: #e0eafc;
-      font-weight: 600;
-      color: #1976d2 !important;
-    }
-    .sidebar .nav-link {
-      color: #333;
-      border-radius: 0.5rem;
-      margin-bottom: 0.5rem;
-      transition: background 0.2s;
-    }
-    .sidebar .nav-link:hover {
-      background: #f0f4fa;
-      color: #1976d2 !important;
-    }
-    .topbar {
-      height: 60px;
-      background: #fff;
-      border-bottom: 1px solid #e3e3e3;
+      width: 100%;
+      height: 100%;
+      z-index: 9999;
       display: flex;
       align-items: center;
-      justify-content: space-between;
-      padding: 0 2rem 0 240px;
-      position: sticky;
+      justify-content: center;
+    }
+    
+    .custom-modal-overlay {
+      position: absolute;
       top: 0;
-      z-index: 1020;
+      left: 0;
+      width: 100%;
+      height: 100%;
+      background-color: rgba(0, 0, 0, 0.5);
     }
-    .main-content {
-      margin-left: 220px;
-      padding: 2rem 2rem 1rem 2rem;
-      min-height: 90vh;
+    
+    .custom-modal-content {
+      position: relative;
+      background: white;
+      border-radius: 8px;
+      box-shadow: 0 4px 20px rgba(0, 0, 0, 0.3);
+      width: 90%;
+      max-width: 600px;
+      max-height: 90vh;
+      overflow-y: auto;
+      z-index: 10000;
     }
-    .section {
-      display: none;
+    
+    .custom-modal-header {
+      background: #007bff;
+      color: white;
+      padding: 1rem;
+      border-radius: 8px 8px 0 0;
+      display: flex;
+      justify-content: space-between;
+      align-items: center;
     }
-    .section.active {
-      display: block;
-      animation: fadeInUp 0.7s;
+    
+    .custom-modal-close {
+      background: none;
+      border: none;
+      color: white;
+      font-size: 1.5rem;
+      cursor: pointer;
+      padding: 0;
+      width: 30px;
+      height: 30px;
+      display: flex;
+      align-items: center;
+      justify-content: center;
     }
-    @keyframes fadeInUp {
-      from { opacity: 0; transform: translateY(30px); }
-      to { opacity: 1; transform: none; }
+    
+    .custom-modal-close:hover {
+      background-color: rgba(255, 255, 255, 0.1);
+      border-radius: 4px;
     }
-    .dark-mode {
-      background: #23272f !important;
-      color: #f1f1f1 !important;
+    
+    .custom-modal-body {
+      padding: 1.5rem;
     }
-    .dark-mode .sidebar, .dark-mode .topbar {
-      background: #23272f !important;
-      color: #f1f1f1 !important;
-      border-color: #333 !important;
+    
+    .custom-modal-footer {
+      padding: 1rem;
+      border-top: 1px solid #dee2e6;
+      display: flex;
+      justify-content: flex-end;
+      gap: 0.5rem;
     }
-    .dark-mode .sidebar .nav-link {
-      color: #f1f1f1 !important;
+    
+    /* Topbar styling */
+    .topbar {
+      background: linear-gradient(135deg, #667eea 0%, #764ba2 100%);
+      color: white;
+      padding: 1rem 1.5rem;
+      border-radius: 1rem;
+      margin-bottom: 2rem;
     }
-    .dark-mode .sidebar .nav-link.active {
-      background: #2d3440 !important;
-      color: #90caf9 !important;
+    
+    .topbar .btn-outline-primary {
+      color: white;
+      border-color: rgba(255,255,255,0.3);
     }
-    .dark-mode .main-content {
-      background: #23272f !important;
-      color: #f1f1f1 !important;
+    
+    .topbar .btn-outline-primary:hover {
+      background-color: rgba(255,255,255,0.1);
+      border-color: rgba(255,255,255,0.5);
     }
-    .dark-mode .card {
-      background: #2d3440 !important;
-      color: #f1f1f1 !important;
+    
+    /* Appointments section styling */
+    #appointments-section {
+      background: #f8f9fa;
+      border-radius: 1rem;
+      padding: 1.5rem;
+      margin-bottom: 2rem;
     }
-    .dark-mode .btn {
-      border-color: #444 !important;
+    
+    .nav-tabs .nav-link {
+      border-radius: 0.5rem 0.5rem 0 0;
+      font-weight: 500;
     }
-    .dark-mode .form-control {
-      background: #23272f !important;
-      color: #f1f1f1 !important;
-      border-color: #444 !important;
+    
+    .nav-tabs .nav-link.active {
+      background-color: #fff;
+      border-color: #dee2e6 #dee2e6 #fff;
+    }
+    
+    /* Filter and search styling */
+    .d-flex.mb-2.gap-2.align-items-center {
+      background: white;
+      padding: 1rem;
+      border-radius: 0.5rem;
+      border: 1px solid #dee2e6;
+    }
+    
+    /* Button styling improvements */
+    .btn-lg-custom {
+      padding: 0.75rem 1.5rem;
+      font-size: 1rem;
+      font-weight: 500;
+      border-radius: 0.5rem;
+    }
+    
+    /* Status badges */
+    .badge {
+      font-size: 0.75rem;
+      padding: 0.375rem 0.75rem;
+    }
+    
+    /* Responsive improvements */
+    @media (max-width: 1400px) {
+      .dashboard-container {
+        padding: 1rem;
+      }
+    }
+    
+    @media (max-width: 1200px) {
+      .dashboard-container {
+        padding: 0.5rem;
+      }
+      
+      .card {
+        padding: 1rem !important;
+      }
+    }
+    
+    @media (max-width: 768px) {
+      .dashboard-container {
+        padding: 0.25rem;
+      }
+      
+      .card {
+        padding: 0.5rem !important;
+      }
+      
+      .table {
+        min-width: 600px;
+        font-size: 0.875rem;
+      }
+      
+      .action-buttons .btn {
+        font-size: 0.625rem;
+        padding: 0.125rem 0.25rem;
+      }
+      
+      .btn-lg-custom {
+        padding: 0.5rem 1rem;
+        font-size: 0.875rem;
+      }
+    }
+    
+    @media (max-width: 576px) {
+      .dashboard-container {
+        padding: 0.125rem;
+      }
+      
+      .card {
+        padding: 0.25rem !important;
+      }
+      
+      .table {
+        min-width: 500px;
+        font-size: 0.75rem;
+      }
+      
+      .action-buttons .btn {
+        font-size: 0.5rem;
+        padding: 0.125rem 0.25rem;
+      }
+      
+      .btn-lg-custom {
+        padding: 0.375rem 0.75rem;
+        font-size: 0.75rem;
+      }
     }
   </style>
 </head>
 <body>
-  <!-- Sidebar -->
-  <nav class="sidebar d-flex flex-column p-3 shadow-sm">
-    <a href="#" class="d-flex align-items-center mb-3 mb-md-0 me-md-auto text-decoration-none">
-      <img src="https://img.icons8.com/ios-filled/100/4a90e2/hospital-room.png" alt="Logo" style="width:40px; height:40px; margin-right:10px;">
-      <span class="fs-5 fw-bold">Sales</span>
-    </a>
-    <hr>
-    <ul class="nav nav-pills flex-column mb-auto">
-      <li><a href="#" class="nav-link active" onclick="showSection('inventory')"><i class="fas fa-boxes"></i> Inventory</a></li>
-      <li><a href="#" class="nav-link" onclick="showSection('sales')"><i class="fas fa-cash-register"></i> Sales</a></li>
-      <li><a href="#" class="nav-link" onclick="showSection('records')"><i class="fas fa-receipt"></i> Sales Records</a></li>
-      <li><a href="#" class="nav-link" onclick="showSection('customers')"><i class="fas fa-users"></i> Customers</a></li>
-      <li><a href="#" class="nav-link" onclick="showSection('reports')"><i class="fas fa-chart-line"></i> Reports</a></li>
-      <li><a href="#" class="nav-link" onclick="showSection('notifications')"><i class="fas fa-bell"></i> Notifications</a></li>
-      <li><a href="#" class="nav-link" onclick="showSection('profile')"><i class="fas fa-user"></i> Profile</a></li>
-    </ul>
-  </nav>
-  <!-- Topbar -->
-  <div class="topbar shadow-sm">
-    <div class="d-flex align-items-center">
-      <h4 class="mb-0"><i class="fas fa-store-alt me-2"></i>Sales Dashboard</h4>
-    </div>
-    <div class="d-flex align-items-center gap-3">
-      <button class="btn btn-outline-secondary" id="darkModeToggle" title="Toggle dark mode"><i class="fas fa-moon"></i></button>
-      <button class="btn btn-outline-danger" onclick="logout()"><i class="fas fa-sign-out-alt"></i> Logout</button>
-    </div>
-  </div>
-  <!-- Main Content -->
-  <div class="main-content">
-    <div id="inventory" class="section active">
-      <h3><i class="fas fa-boxes me-2"></i>Inventory Management</h3>
-      <div class="d-flex justify-content-between align-items-center mb-3">
-        <span class="text-muted">Manage your product inventory below.</span>
-        <button class="btn btn-primary" data-bs-toggle="modal" data-bs-target="#addProductModal"><i class="fas fa-plus"></i> Add Product</button>
-      </div>
-      <div class="table-responsive">
-        <table class="table table-hover align-middle">
-          <thead class="table-light">
-            <tr>
-              <th>Name</th>
-              <th>Category</th>
-              <th>Stock</th>
-              <th>Price</th>
-              <th>Status</th>
-              <th>Actions</th>
-            </tr>
-          </thead>
-          <tbody id="productTableBody">
-            <tr>
-              <td colspan="6" class="text-center text-muted">No products yet.</td>
-            </tr>
-          </tbody>
-        </table>
-      </div>
-    </div>
-    <!-- Add Product Modal -->
-    <div class="modal fade" id="addProductModal" tabindex="-1" aria-labelledby="addProductModalLabel" aria-hidden="true">
-      <div class="modal-dialog">
-        <div class="modal-content">
-          <form id="addProductForm">
-            <div class="modal-header">
-              <h5 class="modal-title" id="addProductModalLabel">Add Product</h5>
-              <button type="button" class="btn-close" data-bs-dismiss="modal" aria-label="Close"></button>
-            </div>
-            <div class="modal-body">
-              <div class="mb-3">
-                <label for="productName" class="form-label">Product Name</label>
-                <input type="text" class="form-control" id="productName" required>
+  <main>
+      <div class="dashboard-container">
+        <div class="card p-4 fade-in position-relative">
+      <button class="btn btn-outline-danger btn-sm position-absolute" id="logoutBtn" style="top: 1.5rem; right: 1.5rem; z-index: 10;"><i class="fa-solid fa-sign-out-alt"></i> Logout</button>
+          <div class="text-center mb-4">
+        <img src="https://img.icons8.com/ios-filled/100/4a90e2/hospital-room.png" alt="Logo" class="logo mb-2">
+        <h2 class="mb-2">Welcome, Doctor!</h2>
+            <p class="text-muted mb-0">View your appointments and manage patient records.</p>
+          </div>
+      <div class="topbar">
+        <div class="d-flex align-items-center gap-3">
+          <div class="dropdown">
+            <button class="btn btn-outline-primary position-relative" type="button" id="notificationsDropdown" data-bs-toggle="dropdown" aria-expanded="false" title="Notifications">
+              <i class="fa-solid fa-bell"></i>
+              <span class="position-absolute top-0 start-100 translate-middle badge rounded-pill bg-danger" id="notificationBadge" style="display: none;">
+                0
+              </span>
+            </button>
+            <ul class="dropdown-menu dropdown-menu-end" aria-labelledby="notificationsDropdown" style="width: 300px;">
+              <li><h6 class="dropdown-header">Notifications</h6></li>
+              <li><hr class="dropdown-divider"></li>
+              <div id="notificationsList">
+                <li class="px-3 py-2 text-muted">No new notifications</li>
               </div>
-              <div class="mb-3">
-                <label for="productCategory" class="form-label">Category</label>
-                <input type="text" class="form-control" id="productCategory" required>
-              </div>
-              <div class="mb-3">
-                <label for="productStock" class="form-label">Stock</label>
-                <input type="number" class="form-control" id="productStock" min="0" required>
-              </div>
-              <div class="mb-3">
-                <label for="productPrice" class="form-label">Price</label>
-                <input type="number" class="form-control" id="productPrice" min="0" step="0.01" required>
-              </div>
-              <div class="mb-3">
-                <label for="productStatus" class="form-label">Status</label>
-                <select class="form-select" id="productStatus" required>
-                  <option value="Active">Active</option>
-                  <option value="Inactive">Inactive</option>
-                </select>
-              </div>
-            </div>
-            <div class="modal-footer">
-              <button type="button" class="btn btn-secondary" data-bs-dismiss="modal">Cancel</button>
-              <button type="submit" class="btn btn-primary">Add Product</button>
-            </div>
-          </form>
+            </ul>
+          </div>
+          <div class="profile" id="doctor-profile-link">
+            <span id="doctor-name" class="fw-bold text-primary">Doctor</span>
+          </div>
         </div>
       </div>
-    </div>
-    <!-- Edit Product Modal -->
-    <div class="modal fade" id="editProductModal" tabindex="-1" aria-labelledby="editProductModalLabel" aria-hidden="true">
-      <div class="modal-dialog">
-        <div class="modal-content">
-          <form id="editProductForm">
-            <div class="modal-header">
-              <h5 class="modal-title" id="editProductModalLabel">Edit Product</h5>
-              <button type="button" class="btn-close" data-bs-dismiss="modal" aria-label="Close"></button>
-            </div>
-            <div class="modal-body">
-              <input type="hidden" id="editProductId">
-              <div class="mb-3">
-                <label for="editProductName" class="form-label">Product Name</label>
-                <input type="text" class="form-control" id="editProductName" required>
-              </div>
-              <div class="mb-3">
-                <label for="editProductCategory" class="form-label">Category</label>
-                <input type="text" class="form-control" id="editProductCategory" required>
-              </div>
-              <div class="mb-3">
-                <label for="editProductStock" class="form-label">Stock</label>
-                <input type="number" class="form-control" id="editProductStock" min="0" required>
-              </div>
-              <div class="mb-3">
-                <label for="editProductPrice" class="form-label">Price</label>
-                <input type="number" class="form-control" id="editProductPrice" min="0" step="0.01" required>
-              </div>
-              <div class="mb-3">
-                <label for="editProductStatus" class="form-label">Status</label>
-                <select class="form-select" id="editProductStatus" required>
-                  <option value="Active">Active</option>
-                  <option value="Inactive">Inactive</option>
-                </select>
-              </div>
-            </div>
-            <div class="modal-footer">
-              <button type="button" class="btn btn-secondary" data-bs-dismiss="modal">Cancel</button>
-              <button type="submit" class="btn btn-primary">Save Changes</button>
-            </div>
-          </form>
-        </div>
-      </div>
-    </div>
-    <div id="sales" class="section">
-      <h3><i class="fas fa-cash-register me-2"></i>Process Sales/Transactions</h3>
-      <form id="processSaleForm" class="card p-4 mb-3" style="max-width: 600px;">
-        <div class="mb-3">
-          <label for="saleProduct" class="form-label">Product</label>
-          <select class="form-select" id="saleProduct" required>
-            <option value="">Select product</option>
-            <!-- Product options will be populated dynamically -->
-          </select>
-        </div>
-        <div class="row mb-3">
-          <div class="col-md-6">
-            <label for="salePrice" class="form-label">Price</label>
-            <input type="number" class="form-control" id="salePrice" readonly>
-          </div>
-          <div class="col-md-6">
-            <label for="saleStock" class="form-label">Available Stock</label>
-            <input type="number" class="form-control" id="saleStock" readonly>
-          </div>
-        </div>
-        <div class="row mb-3">
-          <div class="col-md-6">
-            <label for="saleQuantity" class="form-label">Quantity</label>
-            <input type="number" class="form-control" id="saleQuantity" min="1" required>
-          </div>
-          <div class="col-md-6">
-            <label for="saleTotal" class="form-label">Total</label>
-            <input type="number" class="form-control" id="saleTotal" readonly>
-          </div>
-        </div>
-        <div class="mb-3">
-          <label for="saleCustomer" class="form-label">Customer</label>
-          <select class="form-select" id="saleCustomer">
-            <option value="">Select customer</option>
-            <!-- Customer options will be populated dynamically -->
-          </select>
-          <div class="form-text">Or <a href="#" data-bs-toggle="modal" data-bs-target="#addCustomerModal">add new customer</a></div>
-        </div>
-        <div class="row mb-3">
-          <div class="col-md-6">
-            <label for="saleDate" class="form-label">Date</label>
-            <input type="date" class="form-control" id="saleDate" required>
-          </div>
-          <div class="col-md-6">
-            <label for="salePayment" class="form-label">Payment Method</label>
-            <select class="form-select" id="salePayment" required>
-              <option value="Cash">Cash</option>
-              <option value="Card">Card</option>
-              <option value="Mobile">Mobile</option>
-            </select>
-          </div>
-        </div>
-        <div id="saleMessage" class="mb-3"></div>
-        <button type="submit" class="btn btn-success w-100"><i class="fas fa-check"></i> Process Sale</button>
-      </form>
-    </div>
-    <!-- Add Customer Modal -->
-    <div class="modal fade" id="addCustomerModal" tabindex="-1" aria-labelledby="addCustomerModalLabel" aria-hidden="true">
-      <div class="modal-dialog">
-        <div class="modal-content">
-          <form id="addCustomerForm">
-            <div class="modal-header">
-              <h5 class="modal-title" id="addCustomerModalLabel">Add Customer</h5>
-              <button type="button" class="btn-close" data-bs-dismiss="modal" aria-label="Close"></button>
-            </div>
-            <div class="modal-body">
-              <div class="mb-3">
-                <label for="customerName" class="form-label">Customer Name</label>
-                <input type="text" class="form-control" id="customerName" required>
-              </div>
-              <div class="mb-3">
-                <label for="customerContact" class="form-label">Contact</label>
-                <input type="text" class="form-control" id="customerContact">
-              </div>
-            </div>
-            <div class="modal-footer">
-              <button type="button" class="btn btn-secondary" data-bs-dismiss="modal">Cancel</button>
-              <button type="submit" class="btn btn-primary">Add Customer</button>
-            </div>
-          </form>
-        </div>
-      </div>
-    </div>
-    <div id="records" class="section">
-      <h3><i class="fas fa-receipt me-2"></i>Sales Records</h3>
-      <div class="card p-3 mb-3">
-        <div class="row g-2 align-items-end mb-2">
-          <div class="col-md-3">
-            <label for="filterDate" class="form-label mb-0">Date</label>
-            <input type="date" class="form-control" id="filterDate">
-          </div>
-          <div class="col-md-3">
-            <label for="filterProduct" class="form-label mb-0">Product</label>
-            <input type="text" class="form-control" id="filterProduct" placeholder="Product name">
-          </div>
-          <div class="col-md-3">
-            <label for="filterCustomer" class="form-label mb-0">Customer</label>
-            <input type="text" class="form-control" id="filterCustomer" placeholder="Customer name">
-          </div>
-          <div class="col-md-3 d-flex align-items-end">
-            <button class="btn btn-outline-primary w-100" id="exportCSV"><i class="fas fa-file-csv"></i> Export CSV</button>
-          </div>
-        </div>
-        <div class="table-responsive">
-          <table class="table table-hover align-middle">
-            <thead class="table-light">
-              <tr>
-                <th>Date</th>
-                <th>Product</th>
-                <th>Customer</th>
-                <th>Quantity</th>
-                <th>Total</th>
-                <th>Payment</th>
-                <th>Staff</th>
-                <th>Status</th>
-                <th>Actions</th>
-              </tr>
-            </thead>
-            <tbody id="salesRecordsTableBody">
-              <tr>
-                <td colspan="9" class="text-center text-muted">No sales records found.</td>
-              </tr>
-            </tbody>
-          </table>
-        </div>
-      </div>
-    </div>
-    <div id="customers" class="section">
-      <h3><i class="fas fa-users me-2"></i>Customer Management</h3>
-      <div class="card p-3 mb-3">
+      <div id="appointments-section">
         <div class="d-flex justify-content-between align-items-center mb-2">
-          <input type="text" class="form-control w-50" id="searchCustomer" placeholder="Search customers...">
-          <button class="btn btn-primary ms-2" data-bs-toggle="modal" data-bs-target="#addCustomerModal"><i class="fas fa-plus"></i> Add Customer</button>
-        </div>
-        <div class="table-responsive">
-          <table class="table table-hover align-middle">
-            <thead class="table-light">
-              <tr>
-                <th>Name</th>
-                <th>Contact</th>
-                <th>Total Purchases</th>
-                <th>Last Purchase</th>
-                <th>Actions</th>
-              </tr>
-            </thead>
-            <tbody id="customerTableBody">
-              <tr>
-                <td colspan="5" class="text-center text-muted">No customers found.</td>
-              </tr>
-            </tbody>
-          </table>
-        </div>
-      </div>
-    </div>
-    <div id="reports" class="section">
-      <h3><i class="fas fa-chart-line me-2"></i>Reports & Analytics</h3>
-      <div class="row mb-4">
-        <div class="col-md-3">
-          <div class="card text-center p-3 mb-2">
-            <h6 class="text-muted">Total Sales</h6>
-            <h3 id="reportTotalSales">0</h3>
+          <h5>Appointments</h5>
+          <div class="d-flex gap-2">
+            <button class="btn btn-outline-secondary" id="calendarViewBtn" title="Toggle Calendar View" data-bs-toggle="tooltip"><i class="fa-solid fa-calendar-days"></i></button>
+            <button class="btn btn-outline-success" id="exportCsvBtn" title="Export to CSV" data-bs-toggle="tooltip"><i class="fa-solid fa-file-csv"></i></button>
           </div>
         </div>
-        <div class="col-md-3">
-          <div class="card text-center p-3 mb-2">
-            <h6 class="text-muted">Total Revenue</h6>
-            <h3 id="reportTotalRevenue">₵0.00</h3>
+        <div id="tableViewContainer">
+          <ul class="nav nav-tabs mb-2" id="apptTabs" role="tablist">
+            <li class="nav-item" role="presentation">
+              <button class="nav-link active" id="today-tab" data-bs-toggle="tab" data-bs-target="#today" type="button" role="tab">Today</button>
+            </li>
+            <li class="nav-item" role="presentation">
+              <button class="nav-link" id="upcoming-tab" data-bs-toggle="tab" data-bs-target="#upcoming" type="button" role="tab">Upcoming</button>
+            </li>
+          </ul>
+          <div class="d-flex mb-2 gap-2 align-items-center">
+            <select class="form-select w-auto" id="statusFilter" title="Filter by status">
+              <option value="">All Statuses</option>
+              <option value="pending">Pending</option>
+              <option value="approved">Approved</option>
+              <option value="rejected">Rejected</option>
+              <option value="completed">Completed</option>
+            </select>
+            <input type="text" class="form-control w-auto" id="searchInput" placeholder="Search patient/service..." style="max-width:220px;">
           </div>
-        </div>
-        <div class="col-md-3">
-          <div class="card text-center p-3 mb-2">
-            <h6 class="text-muted">Top Product</h6>
-            <h3 id="reportTopProduct">-</h3>
-          </div>
-        </div>
-        <div class="col-md-3 d-flex align-items-center justify-content-center">
-          <button class="btn btn-outline-primary w-100" id="exportReport"><i class="fas fa-file-export"></i> Export Report</button>
-        </div>
-      </div>
-      <div class="card p-4 mb-4">
-        <h5 class="mb-3"><i class="fas fa-chart-area me-2"></i>Sales Trends</h5>
-        <div id="salesTrendsChart" style="height: 300px; background: #f8f9fa; display: flex; align-items: center; justify-content: center; color: #bbb;">
-          (Sales trends chart will appear here.)
-        </div>
-      </div>
-      <div class="card p-4">
-        <h5 class="mb-3"><i class="fas fa-star me-2"></i>Top Products</h5>
-        <div class="table-responsive">
-          <table class="table table-hover align-middle">
-            <thead class="table-light">
-              <tr>
-                <th>Product</th>
-                <th>Units Sold</th>
-                <th>Total Revenue (₵)</th>
-              </tr>
-            </thead>
-            <tbody id="topProductsTableBody">
-              <tr>
-                <td colspan="3" class="text-center text-muted">No data available.</td>
-              </tr>
-            </tbody>
-          </table>
-        </div>
-      </div>
-    </div>
-    <div id="profile" class="section">
-      <h3><i class="fas fa-user me-2"></i>Profile</h3>
-      <div class="card p-4 mb-4" style="max-width: 600px;">
-        <div class="mb-3">
-          <label class="form-label">Name</label>
-          <input type="text" class="form-control" id="profileName" value="John Doe" readonly>
-        </div>
-        <div class="mb-3">
-          <label class="form-label">Email</label>
-          <input type="email" class="form-control" id="profileEmail" value="sales@example.com" readonly>
-        </div>
-        <div class="mb-3">
-          <label class="form-label">Role</label>
-          <input type="text" class="form-control" id="profileRole" value="Sales" readonly>
-        </div>
-        <div class="mb-3">
-          <label class="form-label">Last Login</label>
-          <input type="text" class="form-control" id="profileLastLogin" value="-" readonly>
-        </div>
-        <div class="d-flex gap-2">
-          <button class="btn btn-primary" data-bs-toggle="modal" data-bs-target="#editProfileModal"><i class="fas fa-edit"></i> Edit Profile</button>
-          <button class="btn btn-outline-secondary" data-bs-toggle="modal" data-bs-target="#changePasswordModal"><i class="fas fa-key"></i> Change Password</button>
-        </div>
-      </div>
-      <div class="card p-4">
-        <h5 class="mb-3"><i class="fas fa-history me-2"></i>Audit Log</h5>
-        <div class="table-responsive">
-          <table class="table table-hover align-middle">
-            <thead class="table-light">
-              <tr>
-                <th>Date</th>
-                <th>Action</th>
-                <th>Details</th>
-              </tr>
-            </thead>
-            <tbody id="auditLogTableBody">
-              <tr>
-                <td colspan="3" class="text-center text-muted">No audit log entries.</td>
-              </tr>
-            </tbody>
-          </table>
-        </div>
-      </div>
-    </div>
-    <!-- Edit Profile Modal -->
-    <div class="modal fade" id="editProfileModal" tabindex="-1" aria-labelledby="editProfileModalLabel" aria-hidden="true">
-      <div class="modal-dialog">
-        <div class="modal-content">
-          <form id="editProfileForm">
-            <div class="modal-header">
-              <h5 class="modal-title" id="editProfileModalLabel">Edit Profile</h5>
-              <button type="button" class="btn-close" data-bs-dismiss="modal" aria-label="Close"></button>
-            </div>
-            <div class="modal-body">
-              <div class="mb-3">
-                <label for="editProfileName" class="form-label">Name</label>
-                <input type="text" class="form-control" id="editProfileName" required>
-              </div>
-              <div class="mb-3">
-                <label for="editProfileEmail" class="form-label">Email</label>
-                <input type="email" class="form-control" id="editProfileEmail" required>
+          <div class="tab-content">
+            <div class="tab-pane fade show active" id="today" role="tabpanel">
+              <div class="table-responsive mb-3">
+                <table class="table table-hover align-middle" id="doctor-appointments-table-today">
+                  <thead class="table-light sticky-top">
+                    <tr>
+                      <th><input type="checkbox" id="selectAllAppts" aria-label="Select all appointments"></th>
+                      <th>Date/Time</th>
+                      <th>Patient</th>
+                      <th>Service</th>
+                      <th>Status</th>
+                      <th>Notes</th>
+                      <th>Actions</th>
+                    </tr>
+                  </thead>
+                  <tbody id="doctor-appointments-tbody-today">
+                    <tr><td colspan="6" class="text-center text-muted">Loading appointments...</td></tr>
+                  </tbody>
+                </table>
               </div>
             </div>
-            <div class="modal-footer">
-              <button type="button" class="btn btn-secondary" data-bs-dismiss="modal">Cancel</button>
-              <button type="submit" class="btn btn-primary">Save Changes</button>
+            <div class="tab-pane fade" id="upcoming" role="tabpanel">
+              <div class="table-responsive mb-3">
+                <table class="table table-hover align-middle" id="doctor-appointments-table-upcoming">
+                  <thead class="table-light sticky-top">
+                    <tr>
+                      <th>Date/Time</th>
+                      <th>Patient</th>
+                      <th>Service</th>
+                      <th>Status</th>
+                      <th>Notes</th>
+                      <th>Actions</th>
+                    </tr>
+                  </thead>
+                  <tbody id="doctor-appointments-tbody-upcoming">
+                    <tr><td colspan="6" class="text-center text-muted">Loading appointments...</td></tr>
+                  </tbody>
+                </table>
+              </div>
+            </div>
+          </div>
+        </div>
+        <div id="calendarViewContainer" class="d-none">
+          <div class="d-flex justify-content-between align-items-center mb-3">
+            <h5><i class="fa-solid fa-calendar-days me-2"></i>Calendar View</h5>
+            <button class="btn btn-outline-secondary" id="backToTableViewBtn">
+              <i class="fa-solid fa-table"></i> Back to Table
+            </button>
+        </div>
+          <div class="card p-3">
+            <div id="doctorCalendar" style="min-height: 500px;"></div>
+      </div>
+            </div>
+            </div>
+      <!-- Custom View Appointment Modal -->
+      <div id="customViewAppointmentModal" class="custom-modal" style="display: none;">
+        <div class="custom-modal-overlay"></div>
+        <div class="custom-modal-content">
+          <div class="custom-modal-header">
+            <h5><i class="fa-solid fa-eye me-2"></i>Appointment Details</h5>
+            <button type="button" class="custom-modal-close" onclick="closeCustomViewModal()">&times;</button>
+          </div>
+          <div class="custom-modal-body" id="customViewAppointmentBody">
+            <!-- Content will be loaded here -->
+        </div>
+          <div class="custom-modal-footer">
+            <button type="button" class="btn btn-secondary" onclick="closeCustomViewModal()">Close</button>
+      </div>
+        </div>
+      </div>
+
+      <!-- Custom Upload Lab Results Modal -->
+      <div id="customUploadLabModal" class="custom-modal" style="display: none;">
+        <div class="custom-modal-overlay"></div>
+        <div class="custom-modal-content">
+          <div class="custom-modal-header">
+            <h5><i class="fa-solid fa-flask me-2"></i>Upload Lab Results</h5>
+            <button type="button" class="custom-modal-close" onclick="closeCustomUploadModal()">&times;</button>
+          </div>
+          <form id="customUploadLabForm">
+            <div class="custom-modal-body">
+              <div class="mb-3">
+                <label for="customLabPatient" class="form-label">Patient</label>
+                <select class="form-select" id="customLabPatient" required>
+                  <option value="">Select patient</option>
+                </select>
+              </div>
+              <div class="mb-3">
+                <label for="customLabTestType" class="form-label">Test Type</label>
+                <input type="text" class="form-control" id="customLabTestType" placeholder="e.g., Blood Test, Urine Analysis" required>
+              </div>
+              <div class="mb-3">
+                <label for="customLabResults" class="form-label">Results</label>
+                <textarea class="form-control" id="customLabResults" rows="4" placeholder="Enter lab results details..." required></textarea>
+              </div>
+              <div class="mb-3">
+                <label for="customLabDate" class="form-label">Test Date</label>
+                <input type="date" class="form-control" id="customLabDate" required>
+              </div>
+              <div class="mb-3">
+                <label for="customLabFile" class="form-label">Upload File (Optional)</label>
+                <input type="file" class="form-control" id="customLabFile" accept=".pdf,.doc,.docx,.jpg,.jpeg,.png">
+                <div class="form-text">Supported formats: PDF, DOC, DOCX, JPG, PNG</div>
+              </div>
+            </div>
+            <div class="custom-modal-footer">
+              <button type="button" class="btn btn-secondary" onclick="closeCustomUploadModal()">Cancel</button>
+              <button type="submit" class="btn btn-primary">Upload Results</button>
             </div>
           </form>
         </div>
       </div>
-    </div>
-    <!-- Change Password Modal -->
-    <div class="modal fade" id="changePasswordModal" tabindex="-1" aria-labelledby="changePasswordModalLabel" aria-hidden="true">
-      <div class="modal-dialog">
-        <div class="modal-content">
-          <form id="changePasswordForm">
-            <div class="modal-header">
-              <h5 class="modal-title" id="changePasswordModalLabel">Change Password</h5>
-              <button type="button" class="btn-close" data-bs-dismiss="modal" aria-label="Close"></button>
-            </div>
-            <div class="modal-body">
-              <div class="mb-3">
-                <label for="currentPassword" class="form-label">Current Password</label>
-                <input type="password" class="form-control" id="currentPassword" required>
+      <!-- Reject Appointment Modal -->
+      <div class="modal fade" id="rejectAppointmentModal" tabindex="-1" aria-labelledby="rejectAppointmentModalLabel" aria-hidden="true" data-bs-backdrop="static">
+        <div class="modal-dialog">
+          <div class="modal-content">
+            <form id="rejectAppointmentForm">
+              <div class="modal-header bg-danger text-white">
+                <h5 class="modal-title" id="rejectAppointmentModalLabel"><i class="fa-solid fa-xmark me-2"></i>Reject Appointment</h5>
+                <button type="button" class="btn-close btn-close-white" data-bs-dismiss="modal" aria-label="Close"></button>
               </div>
-              <div class="mb-3">
-                <label for="newPassword" class="form-label">New Password</label>
-                <input type="password" class="form-control" id="newPassword" required>
+              <div class="modal-body">
+                <input type="hidden" id="rejectAppointmentId">
+                <div class="mb-3">
+                  <label for="rejectReason" class="form-label">Reason (optional)</label>
+                  <textarea class="form-control" id="rejectReason" rows="2" maxlength="200" placeholder="Enter reason for rejection"></textarea>
+                </div>
               </div>
-              <div class="mb-3">
-                <label for="confirmNewPassword" class="form-label">Confirm New Password</label>
-                <input type="password" class="form-control" id="confirmNewPassword" required>
+              <div class="modal-footer">
+                <button type="button" class="btn btn-secondary" data-bs-dismiss="modal">Cancel</button>
+                <button type="submit" class="btn btn-danger">Reject</button>
               </div>
-            </div>
-            <div class="modal-footer">
-              <button type="button" class="btn btn-secondary" data-bs-dismiss="modal">Cancel</button>
-              <button type="submit" class="btn btn-primary">Change Password</button>
-            </div>
-          </form>
+            </form>
+          </div>
+        </div>
+      </div>
+      <!-- Write Prescription Modal -->
+      <div class="modal fade" id="writePrescriptionModal" tabindex="-1" aria-labelledby="writePrescriptionModalLabel" aria-hidden="true" data-bs-backdrop="static">
+        <div class="modal-dialog modal-lg">
+          <div class="modal-content">
+            <form id="writePrescriptionForm">
+              <div class="modal-header bg-primary text-white">
+                <h5 class="modal-title" id="writePrescriptionModalLabel"><i class="fa-solid fa-prescription-bottle-medical me-2"></i>Write Prescription</h5>
+                <button type="button" class="btn-close btn-close-white" data-bs-dismiss="modal" aria-label="Close"></button>
+              </div>
+              <div class="modal-body">
+                <input type="hidden" id="prescriptionAppointmentId">
+                <input type="hidden" id="prescriptionPatientId">
+                <div class="row">
+                  <div class="col-md-6">
+                    <div class="mb-3">
+                      <label class="form-label">Patient</label>
+                      <div class="form-control-plaintext" id="prescriptionPatientName"></div>
+                    </div>
+                  </div>
+                </div>
+                <div class="row">
+                  <div class="col-md-6">
+                    <div class="mb-3">
+                      <label for="prescriptionDiagnosis" class="form-label">Diagnosis *</label>
+                      <textarea class="form-control" id="prescriptionDiagnosis" rows="2" required placeholder="Enter diagnosis"></textarea>
+                    </div>
+                  </div>
+                  <div class="col-md-6">
+                    <div class="mb-3">
+                      <label for="prescriptionMedication" class="form-label">Medication *</label>
+                      <textarea class="form-control" id="prescriptionMedication" rows="2" required placeholder="Enter medication details"></textarea>
+                    </div>
+                  </div>
+                </div>
+                <div class="row">
+                  <div class="col-md-6">
+                    <div class="mb-3">
+                      <label for="prescriptionInstructions" class="form-label">Instructions</label>
+                      <textarea class="form-control" id="prescriptionInstructions" rows="2" placeholder="Enter dosage instructions"></textarea>
+                    </div>
+                  </div>
+                  <div class="col-md-6">
+                    <div class="mb-3">
+                      <label for="prescriptionDuration" class="form-label">Duration</label>
+                      <input type="text" class="form-control" id="prescriptionDuration" placeholder="e.g., 7 days, 2 weeks">
+                    </div>
+                  </div>
+                </div>
+                <div class="row">
+                  <div class="col-md-6">
+                    <div class="mb-3">
+                      <label for="prescriptionRefills" class="form-label">Refills</label>
+                      <input type="text" class="form-control" id="prescriptionRefills" placeholder="e.g., 2 refills">
+                    </div>
+                  </div>
+                  <div class="col-md-6">
+                    <div class="mb-3">
+                      <label for="prescriptionNotes" class="form-label">Notes</label>
+                      <textarea class="form-control" id="prescriptionNotes" rows="2" placeholder="Additional notes"></textarea>
+                    </div>
+                  </div>
+                </div>
+              </div>
+              <div class="modal-footer">
+                <button type="button" class="btn btn-secondary" data-bs-dismiss="modal">Cancel</button>
+                <button type="submit" class="btn btn-primary">Save Prescription</button>
+              </div>
+            </form>
+          </div>
+        </div>
+      </div>
+      <!-- Upload Lab Results Modal -->
+      <div class="modal fade" id="uploadLabModal" tabindex="-1" aria-labelledby="uploadLabModalLabel" aria-hidden="true">
+        <div class="modal-dialog modal-lg">
+          <div class="modal-content">
+            <form id="uploadLabForm">
+              <div class="modal-header bg-primary text-white">
+                <h5 class="modal-title" id="uploadLabModalLabel"><i class="fa-solid fa-flask me-2"></i>Upload Lab Results</h5>
+                <button type="button" class="btn-close btn-close-white" data-bs-dismiss="modal" aria-label="Close"></button>
+              </div>
+              <div class="modal-body">
+                <div class="mb-3">
+                  <label for="labPatient" class="form-label">Patient</label>
+                  <select class="form-select" id="labPatient" required>
+                    <option value="">Select patient</option>
+                  </select>
+                </div>
+                <div class="mb-3">
+                  <label for="labTestType" class="form-label">Test Type</label>
+                  <input type="text" class="form-control" id="labTestType" placeholder="e.g., Blood Test, Urine Analysis" required>
+                </div>
+                <div class="mb-3">
+                  <label for="labResults" class="form-label">Results</label>
+                  <textarea class="form-control" id="labResults" rows="4" placeholder="Enter lab results details..." required></textarea>
+                </div>
+                <div class="mb-3">
+                  <label for="labDate" class="form-label">Test Date</label>
+                  <input type="date" class="form-control" id="labDate" required>
+                </div>
+                <div class="mb-3">
+                  <label for="labFile" class="form-label">Upload File (Optional)</label>
+                  <input type="file" class="form-control" id="labFile" accept=".pdf,.doc,.docx,.jpg,.jpeg,.png">
+                  <div class="form-text">Supported formats: PDF, DOC, DOCX, JPG, PNG</div>
+                </div>
+              </div>
+              <div class="modal-footer">
+                <button type="button" class="btn btn-secondary" data-bs-dismiss="modal">Cancel</button>
+                <button type="submit" class="btn btn-primary">Upload Results</button>
+              </div>
+            </form>
+          </div>
+        </div>
+      </div>
+      <!-- Toasts -->
+      <div class="position-fixed bottom-0 end-0 p-3" style="z-index: 3000">
+        <div id="docApptToast" class="toast align-items-center text-bg-success border-0" role="alert" aria-live="assertive" aria-atomic="true">
+          <div class="d-flex">
+            <div class="toast-body" id="docApptToastMsg">Action successful!</div>
+            <button type="button" class="btn-close btn-close-white me-2 m-auto" data-bs-dismiss="toast" aria-label="Close"></button>
+          </div>
+        </div>
+        <div id="docApptErrorToast" class="toast align-items-center text-bg-danger border-0" role="alert" aria-live="assertive" aria-atomic="true">
+          <div class="d-flex">
+            <div class="toast-body" id="docApptErrorToastMsg">Error.</div>
+            <button type="button" class="btn-close btn-close-white me-2 m-auto" data-bs-dismiss="toast" aria-label="Close"></button>
+          </div>
+        </div>
+      </div>
+      <!-- Bulk Actions Bar -->
+      <div id="bulkActionsBar" class="d-none position-fixed bottom-0 start-0 end-0 bg-light border-top shadow-sm p-3 d-flex justify-content-center gap-2" style="z-index:4000;">
+        <button class="btn btn-success" id="bulkApproveBtn"><i class="fa-solid fa-check"></i> Approve</button>
+        <button class="btn btn-danger" id="bulkRejectBtn"><i class="fa-solid fa-xmark"></i> Reject</button>
+        <button class="btn btn-info" id="bulkCompleteBtn"><i class="fa-solid fa-circle-check"></i> Mark as Completed</button>
+        <span id="bulkCount" class="ms-3 text-muted"></span>
+      </div>
+              <div class="d-flex gap-3 justify-content-center flex-wrap mt-4 mb-2">
+          <button class="btn btn-outline-primary btn-lg-custom" id="uploadLabBtn">
+            <i class="fa-solid fa-flask me-2"></i>Upload Lab Results
+          </button>
+          <button class="btn btn-outline-secondary btn-lg-custom" onclick="goBack()">
+            <i class="fa-solid fa-arrow-left me-2"></i>Back
+          </button>
         </div>
       </div>
     </div>
-    <div id="notifications" class="section">
-      <h3><i class="fas fa-bell me-2"></i>Notifications</h3>
-      <div class="card p-4 mb-3">
-        <ul class="list-group" id="notificationList">
-          <li class="list-group-item d-flex justify-content-between align-items-center">
-            <span>No notifications.</span>
-          </li>
-        </ul>
-      </div>
-      <button class="btn btn-outline-secondary" id="clearNotifications"><i class="fas fa-trash"></i> Clear All</button>
-    </div>
-  </div>
-  <footer class="text-center py-3 bg-light mt-4 shadow-sm" style="margin-left:220px;">
+  </main>
+  <footer class="text-center py-3 bg-light mt-4 shadow-sm">
     <p class="mb-0">&copy; 2025 Alisay Medical Center</p>
   </footer>
   <script src="https://cdn.jsdelivr.net/npm/bootstrap@5.3.2/dist/js/bootstrap.bundle.min.js"></script>
-  <script src="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.4.0/js/all.min.js"></script>
+  <script src="https://cdn.jsdelivr.net/npm/fullcalendar@6.1.8/index.global.min.js"></script>
   <!-- Firebase SDKs -->
   <script src="https://www.gstatic.com/firebasejs/9.22.2/firebase-app-compat.js"></script>
   <script src="https://www.gstatic.com/firebasejs/9.22.2/firebase-auth-compat.js"></script>
   <script src="https://www.gstatic.com/firebasejs/9.22.2/firebase-firestore-compat.js"></script>
-  <script>
-    const firebaseConfig = {
-      apiKey: "YOUR_API_KEY",
-      authDomain: "YOUR_AUTH_DOMAIN",
-      projectId: "YOUR_PROJECT_ID",
-      storageBucket: "YOUR_STORAGE_BUCKET",
-      messagingSenderId: "YOUR_MESSAGING_SENDER_ID",
-      appId: "YOUR_APP_ID"
-    };
-    firebase.initializeApp(firebaseConfig);
-  </script>
-
-  <!-- Your custom scripts that use firebase.auth() or firebase.firestore() -->
+    <script src="https://www.gstatic.com/firebasejs/9.22.2/firebase-storage-compat.js"></script>
+  <!-- Your JS files -->
   <script src="assets/js/main.js"></script>
   <script src="assets/js/auth.js"></script>
+  <script src="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.4.0/js/all.min.js"></script>
   <script>
-    function showSection(sectionId) {
-      document.querySelectorAll('.section').forEach(sec => sec.classList.remove('active'));
-      document.getElementById(sectionId).classList.add('active');
-      document.querySelectorAll('.sidebar .nav-link').forEach(link => link.classList.remove('active'));
-      const navLinks = document.querySelectorAll('.sidebar .nav-link');
-      navLinks.forEach(link => {
-        if (link.getAttribute('onclick').includes(sectionId)) {
-          link.classList.add('active');
-        }
-      });
+    function goBack() {
+      if (window.history.length > 1) {
+        window.history.back();
+      } else {
+        window.location.href = 'login.html';
+      }
     }
     function logout() {
       firebase.auth().signOut().then(() => {
         window.location.href = 'login.html';
       });
     }
-    // Dark mode toggle
-    document.getElementById('darkModeToggle').onclick = function() {
-      document.body.classList.toggle('dark-mode');
-    };
-  </script>
-  <script>
-    // Your Firebase config should already be initialized above this script
-
-    const db = firebase.firestore();
-
-    // Load products and display in table
-    function loadProducts() {
-      const tbody = document.getElementById('productTableBody');
-      tbody.innerHTML = '<tr><td colspan="6" class="text-center text-muted">Loading...</td></tr>';
-      db.collection('products').orderBy('name').onSnapshot(snapshot => {
-        tbody.innerHTML = '';
-        if (snapshot.empty) {
-          tbody.innerHTML = '<tr><td colspan="6" class="text-center text-muted">No products yet.</td></tr>';
-          return;
-        }
-        snapshot.forEach(doc => {
-          const p = doc.data();
-          const row = document.createElement('tr');
-          row.innerHTML = `
-            <td>${p.name}</td>
-            <td>${p.category}</td>
-            <td>${p.stock}</td>
-            <td>₵${parseFloat(p.price).toFixed(2)}</td>
-            <td>${p.status}</td>
-            <td>
-              <button class="btn btn-sm btn-outline-primary" data-id="${doc.id}" onclick="editProduct('${doc.id}')"><i class="fas fa-edit"></i></button>
-              <button class="btn btn-sm btn-outline-danger" data-id="${doc.id}" onclick="deleteProduct('${doc.id}')"><i class="fas fa-trash"></i></button>
-            </td>
-          `;
-          tbody.appendChild(row);
-        });
-      });
-    }
-
-    // Add product
-    document.getElementById('addProductForm').addEventListener('submit', function(e) {
-      e.preventDefault();
-      const name = document.getElementById('productName').value.trim();
-      const category = document.getElementById('productCategory').value.trim();
-      const stock = parseInt(document.getElementById('productStock').value, 10);
-      const price = parseFloat(document.getElementById('productPrice').value);
-      const status = document.getElementById('productStatus').value;
-      db.collection('products').add({
-        name, category, stock, price, status
-      }).then(() => {
-        // Close modal and reset form
-        document.getElementById('addProductForm').reset();
-        bootstrap.Modal.getInstance(document.getElementById('addProductModal')).hide();
-        showToast('Product added successfully!');
-      }).catch(err => {
-        showToast('Error adding product: ' + err.message, true);
-      });
+    document.addEventListener('DOMContentLoaded', function() {
+      var logoutBtn = document.getElementById('logoutBtn');
+      if (logoutBtn) {
+        logoutBtn.onclick = function() {
+          alert('Logout button clicked!');
+          firebase.auth().signOut().then(() => {
+            window.location.href = 'login.html';
+          });
+        };
+      }
+    });
+    // --- Doctor Appointments Logic ---
+    const apptTbodyToday = document.getElementById('doctor-appointments-tbody-today');
+    const apptTbodyUpcoming = document.getElementById('doctor-appointments-tbody-upcoming');
+    const viewModal = new bootstrap.Modal(document.getElementById('viewAppointmentModal'));
+    const rejectModal = new bootstrap.Modal(document.getElementById('rejectAppointmentModal'));
+    const rejectForm = document.getElementById('rejectAppointmentForm');
+    const rejectIdInput = document.getElementById('rejectAppointmentId');
+    const rejectReasonInput = document.getElementById('rejectReason');
+    const statusFilterSelect = document.getElementById('statusFilter');
+    const searchInput = document.getElementById('searchInput');
+    const apptTabs = new bootstrap.Tab(document.getElementById('apptTabs'));
+    const selectAllApptsCheckbox = document.getElementById('selectAllAppts');
+    const bulkActionsBar = document.getElementById('bulkActionsBar');
+    const bulkApproveBtn = document.getElementById('bulkApproveBtn');
+    const bulkRejectBtn = document.getElementById('bulkRejectBtn');
+    const bulkCompleteBtn = document.getElementById('bulkCompleteBtn');
+    const bulkCountSpan = document.getElementById('bulkCount');
+    const calendarViewBtn = document.getElementById('calendarViewBtn');
+    const tableViewContainer = document.getElementById('tableViewContainer');
+    const calendarViewContainer = document.getElementById('calendarViewContainer');
+    let doctorCalendar = null;
+    calendarViewBtn.addEventListener('click', function() {
+      if (calendarViewContainer.classList.contains('d-none')) {
+        tableViewContainer.classList.add('d-none');
+        calendarViewContainer.classList.remove('d-none');
+        calendarViewBtn.innerHTML = '<i class="fa-solid fa-table"></i> Table View';
+        if (!doctorCalendar) renderDoctorCalendar();
+      } else {
+        calendarViewContainer.classList.add('d-none');
+        tableViewContainer.classList.remove('d-none');
+        calendarViewBtn.innerHTML = '<i class="fa-solid fa-calendar-days"></i> Calendar View';
+      }
     });
 
-    // Show toast
-    function showToast(message, isError = false) {
-      let toast = document.getElementById('customToast');
-      if (!toast) {
-        toast = document.createElement('div');
-        toast.id = 'customToast';
-        toast.className = 'toast align-items-center text-white ' + (isError ? 'bg-danger' : 'bg-success');
-        toast.style.position = 'fixed';
-        toast.style.bottom = '20px';
-        toast.style.right = '20px';
-        toast.style.zIndex = 9999;
-        toast.innerHTML = `
-          <div class="d-flex">
-            <div class="toast-body">${message}</div>
-            <button type="button" class="btn-close btn-close-white me-2 m-auto" data-bs-dismiss="toast"></button>
-          </div>
-        `;
-        document.body.appendChild(toast);
-      } else {
-        toast.querySelector('.toast-body').textContent = message;
-        toast.className = 'toast align-items-center text-white ' + (isError ? 'bg-danger' : 'bg-success');
+    // Back to table view button
+    document.getElementById('backToTableViewBtn').addEventListener('click', function() {
+      calendarViewContainer.classList.add('d-none');
+      tableViewContainer.classList.remove('d-none');
+      calendarViewBtn.innerHTML = '<i class="fa-solid fa-calendar-days"></i> Calendar View';
+    });
+    function renderDoctorCalendar() {
+      const calendarEl = document.getElementById('doctorCalendar');
+      if (!calendarEl) return;
+      
+      doctorCalendar = new FullCalendar.Calendar(calendarEl, {
+        initialView: 'dayGridMonth',
+        headerToolbar: {
+          left: 'prev,next today',
+          center: 'title',
+          right: 'dayGridMonth,timeGridWeek,timeGridDay'
+        },
+        height: 'auto',
+        themeSystem: 'bootstrap5',
+        dayMaxEvents: true,
+        eventClick: function(info) {
+          // Show appointment details when clicked
+          const appointmentId = info.event.id;
+          if (appointmentId) {
+            onViewAppointment({ currentTarget: { getAttribute: () => appointmentId } });
+          }
+        },
+        eventDidMount: function(info) {
+          // Add tooltips to events
+          const event = info.event;
+          const status = event.extendedProps.status;
+          let color = '#6c757d'; // default gray
+          
+          switch(status) {
+            case 'pending': color = '#ffc107'; break; // warning yellow
+            case 'approved': color = '#198754'; break; // success green
+            case 'rejected': color = '#dc3545'; break; // danger red
+            case 'completed': color = '#0dcaf0'; break; // info blue
+          }
+          
+          info.el.style.backgroundColor = color;
+          info.el.style.borderColor = color;
+          
+          // Add tooltip
+          const tooltip = new bootstrap.Tooltip(info.el, {
+            title: `${event.title}\nStatus: ${status}\nTime: ${event.start.toLocaleTimeString()}`,
+            placement: 'top',
+            trigger: 'hover',
+            container: 'body'
+          });
+        },
+        events: async function(info, successCallback, failureCallback) {
+          try {
+            const start = info.start;
+            const end = info.end;
+            
+            const snapshot = await firebase.firestore().collection('appointments')
+              .where('doctorId', '==', currentDoctor.uid)
+              .where('date', '>=', firebase.firestore.Timestamp.fromDate(start))
+              .where('date', '<', firebase.firestore.Timestamp.fromDate(end))
+              .get();
+            
+            const events = [];
+            snapshot.forEach(doc => {
+              const data = doc.data();
+              const date = data.date ? (data.date.seconds ? new Date(data.date.toDate()) : new Date(data.date)) : new Date();
+              
+              events.push({
+                id: doc.id,
+                title: `${data.patient} - ${data.service}`,
+                start: date,
+                end: new Date(date.getTime() + 60 * 60 * 1000), // 1 hour duration
+                extendedProps: {
+                  patient: data.patient,
+                  service: data.service,
+                  status: data.status,
+                  notes: data.notes
+                }
+              });
+            });
+            
+            successCallback(events);
+          } catch (error) {
+            console.error('Error loading calendar events:', error);
+            failureCallback(error);
+          }
+        }
+      });
+      
+      doctorCalendar.render();
+    }
+    async function fetchDoctorCalendarEvents(fetchInfo, successCallback, failureCallback) {
+      try {
+        const snap = await firebase.firestore().collection('appointments')
+          .where('doctorId','==',currentDoctor.uid)
+          .get();
+        const events = [];
+        snap.forEach(doc => {
+          const data = doc.data();
+          const date = data.date ? (data.date.seconds ? new Date(data.date.toDate()) : new Date(data.date)) : null;
+          if (!date) return;
+          events.push({
+            id: doc.id,
+            title: data.patient + (data.service ? ' - ' + data.service : ''),
+            start: date,
+            status: data.status,
+            backgroundColor: undefined // set in eventDidMount
+          });
+        });
+        successCallback(events);
+      } catch (err) {
+        failureCallback(err);
       }
-      const bsToast = new bootstrap.Toast(toast, { delay: 3000 });
-      bsToast.show();
+    }
+    function showDocApptToast(msg, isError = false) {
+      const toastEl = isError ? document.getElementById('docApptErrorToast') : document.getElementById('docApptToast');
+      const toastMsg = isError ? document.getElementById('docApptErrorToastMsg') : document.getElementById('docApptToastMsg');
+      toastMsg.textContent = msg;
+      const toast = new bootstrap.Toast(toastEl);
+      toast.show();
+    }
+    let currentDoctor = null;
+    firebase.auth().onAuthStateChanged(async function(user) {
+      if (user) {
+        currentDoctor = user;
+        
+        // Update doctor name in the topbar
+        try {
+          const userDoc = await firebase.firestore().collection('users').doc(user.uid).get();
+          if (userDoc.exists) {
+            const userData = userDoc.data();
+            const doctorNameElement = document.getElementById('doctor-name');
+            if (doctorNameElement) {
+              doctorNameElement.textContent = userData.name || user.email || 'Doctor';
+            }
+          }
+        } catch (err) {
+          console.error('Error fetching doctor name:', err);
+        }
+        
+        loadDoctorAppointments();
+      } else {
+        window.location.href = 'login.html';
+      }
+    });
+
+    async function loadDoctorAppointments() {
+      try {
+        if (!apptTbodyToday || !apptTbodyUpcoming) {
+          console.error('Appointment table elements not found');
+          return;
+        }
+        
+        console.log('Loading appointments for doctor:', currentDoctor.uid);
+        
+        apptTbodyToday.innerHTML = '<tr><td colspan="7" class="text-center text-muted">Loading appointments...</td></tr>';
+        apptTbodyUpcoming.innerHTML = '<tr><td colspan="6" class="text-center text-muted">Loading appointments...</td></tr>';
+        
+        const now = new Date();
+        const today = new Date(now.getFullYear(), now.getMonth(), now.getDate());
+        const tomorrow = new Date(today);
+        tomorrow.setDate(tomorrow.getDate() + 1);
+        
+        // Get all appointments for this doctor
+        const allAppointmentsSnap = await firebase.firestore().collection('appointments')
+          .where('doctorId', '==', currentDoctor.uid)
+          .get();
+        
+        console.log('Total appointments found for doctor:', allAppointmentsSnap.size);
+        
+        if (allAppointmentsSnap.empty) {
+          console.log('No appointments found, creating test appointments...');
+          
+          // Create test appointments
+          const testAppointments = [
+            {
+              patient: 'John Doe',
+              service: 'General Checkup',
+              date: firebase.firestore.Timestamp.fromDate(new Date(Date.now() + 2 * 60 * 60 * 1000)), // 2 hours from now
+              status: 'pending',
+              notes: 'Regular checkup',
+              doctorId: currentDoctor.uid
+            },
+            {
+              patient: 'Jane Smith',
+              service: 'Blood Test',
+              date: firebase.firestore.Timestamp.fromDate(new Date(Date.now() + 24 * 60 * 60 * 1000)), // Tomorrow
+              status: 'approved',
+              notes: 'Fasting required',
+              doctorId: currentDoctor.uid
+            },
+            {
+              patient: 'Mike Johnson',
+              service: 'Consultation',
+              date: firebase.firestore.Timestamp.fromDate(new Date(Date.now() + 3 * 24 * 60 * 60 * 1000)), // 3 days from now
+              status: 'pending',
+              notes: 'Follow-up appointment',
+              doctorId: currentDoctor.uid
+            }
+          ];
+          
+          for (const appointment of testAppointments) {
+            await firebase.firestore().collection('appointments').add(appointment);
+          }
+          
+          console.log('Test appointments created successfully');
+          // Reload appointments after creating test data
+          setTimeout(() => {
+            loadDoctorAppointments();
+          }, 1000);
+          
+          return;
+        }
+        
+        // Process appointments
+        const todayAppointments = [];
+        const upcomingAppointments = [];
+        
+        allAppointmentsSnap.forEach(doc => {
+          const data = doc.data();
+          console.log('Processing appointment:', data);
+          
+          let appointmentDate = null;
+          if (data.date) {
+            if (data.date.seconds) {
+              appointmentDate = new Date(data.date.toDate());
+            } else if (typeof data.date === 'string') {
+              appointmentDate = new Date(data.date);
+            } else {
+              appointmentDate = new Date(data.date);
+            }
+          }
+          
+          console.log('Parsed appointment date:', appointmentDate);
+          
+          if (appointmentDate) {
+            const appointmentDay = new Date(appointmentDate.getFullYear(), appointmentDate.getMonth(), appointmentDate.getDate());
+            
+            if (appointmentDay.getTime() === today.getTime()) {
+              todayAppointments.push({ doc, data, date: appointmentDate });
+            } else if (appointmentDate > now) {
+              upcomingAppointments.push({ doc, data, date: appointmentDate });
+            }
+          }
+        });
+        
+        // Sort appointments by date
+        todayAppointments.sort((a, b) => a.date - b.date);
+        upcomingAppointments.sort((a, b) => a.date - b.date);
+        
+        console.log('Today appointments:', todayAppointments.length);
+        console.log('Upcoming appointments:', upcomingAppointments.length);
+        
+        // Render today appointments
+        apptTbodyToday.innerHTML = '';
+        if (todayAppointments.length === 0) {
+          apptTbodyToday.innerHTML = '<tr><td colspan="7" class="text-center text-muted">No appointments for today</td></tr>';
+        } else {
+          todayAppointments.forEach(({ doc, data, date }) => {
+            const dateStr = date ? date.toLocaleString() : 'No date';
+            const patient = data.patient || '';
+            const service = data.service || '';
+            const status = data.status || '';
+            const notes = data.notes || '';
+            const reason = data.rejectionReason || '';
+            
+            let statusClass = 'secondary';
+            if (status === 'pending') statusClass = 'warning';
+            else if (status === 'approved') statusClass = 'success';
+            else if (status === 'rejected') statusClass = 'danger';
+            else if (status === 'completed') statusClass = 'info';
+            
+            // Highlight soon appointments (within 1 hour)
+            let isSoon = false;
+            if (date) {
+              const timeDiff = date - now;
+              isSoon = timeDiff > 0 && timeDiff < 3600000; // More than 0 seconds and less than 1 hour
+            }
+            
+            const rowHtml = `<tr class='${isSoon ? 'table-warning' : ''}'>
+              <td><input type="checkbox" class="appt-checkbox" data-id='${doc.id}'></td>
+              <td>${dateStr}</td>
+              <td>${patient}</td>
+              <td>${service}</td>
+              <td><span class="badge bg-${statusClass} text-capitalize">${status}</span>${status==='rejected'&&reason?`<br><small class='text-danger'>${reason}</small>`:''}</td>
+              <td>${notes}</td>
+              <td>
+                <div class="action-buttons">
+                  <button class='btn btn-sm btn-outline-info view-appt-btn' data-id='${doc.id}' title="View Details"><i class='fa-solid fa-eye'></i></button>
+                  ${status==='pending'?`<button class='btn btn-sm btn-outline-success approve-appt-btn' data-id='${doc.id}' title="Approve"><i class='fa-solid fa-check'></i></button>`:''}
+                  ${status==='pending'?`<button class='btn btn-sm btn-outline-danger reject-appt-btn' data-id='${doc.id}' title="Reject"><i class='fa-solid fa-xmark'></i></button>`:''}
+                  ${status==='approved'?`<button class='btn btn-sm btn-outline-info complete-appt-btn' data-id='${doc.id}' title="Mark Complete"><i class='fa-solid fa-check-double'></i></button>`:''}
+                  <button class='btn btn-sm btn-outline-primary write-prescription-btn' data-id='${doc.id}' title="Write Prescription"><i class='fa-solid fa-prescription-bottle-medical'></i></button>
+                </div>
+              </td>
+            </tr>`;
+            
+            apptTbodyToday.innerHTML += rowHtml;
+          });
+        }
+        
+        // Render upcoming appointments
+        apptTbodyUpcoming.innerHTML = '';
+        if (upcomingAppointments.length === 0) {
+          apptTbodyUpcoming.innerHTML = '<tr><td colspan="6" class="text-center text-muted">No upcoming appointments</td></tr>';
+        } else {
+          upcomingAppointments.forEach(({ doc, data, date }) => {
+            const dateStr = date ? date.toLocaleString() : 'No date';
+            const patient = data.patient || '';
+            const service = data.service || '';
+            const status = data.status || '';
+            const notes = data.notes || '';
+            const reason = data.rejectionReason || '';
+            
+            let statusClass = 'secondary';
+            if (status === 'pending') statusClass = 'warning';
+            else if (status === 'approved') statusClass = 'success';
+            else if (status === 'rejected') statusClass = 'danger';
+            else if (status === 'completed') statusClass = 'info';
+            
+            // Highlight soon appointments (within 1 hour)
+            let isSoon = false;
+            if (date) {
+              const timeDiff = date - now;
+              isSoon = timeDiff > 0 && timeDiff < 3600000; // More than 0 seconds and less than 1 hour
+            }
+            
+            const rowHtml = `<tr class='${isSoon ? 'table-warning' : ''}'>
+              <td>${dateStr}</td>
+              <td>${patient}</td>
+              <td>${service}</td>
+              <td><span class="badge bg-${statusClass} text-capitalize">${status}</span>${status==='rejected'&&reason?`<br><small class='text-danger'>${reason}</small>`:''}</td>
+              <td>${notes}</td>
+              <td>
+                <div class="action-buttons">
+                  <button class='btn btn-sm btn-outline-info view-appt-btn' data-id='${doc.id}' title="View Details"><i class='fa-solid fa-eye'></i></button>
+                  ${status==='pending'?`<button class='btn btn-sm btn-outline-success approve-appt-btn' data-id='${doc.id}' title="Approve"><i class='fa-solid fa-check'></i></button>`:''}
+                  ${status==='pending'?`<button class='btn btn-sm btn-outline-danger reject-appt-btn' data-id='${doc.id}' title="Reject"><i class='fa-solid fa-xmark'></i></button>`:''}
+                  ${status==='approved'?`<button class='btn btn-sm btn-outline-info complete-appt-btn' data-id='${doc.id}' title="Mark Complete"><i class='fa-solid fa-check-double'></i></button>`:''}
+                  <button class='btn btn-sm btn-outline-primary write-prescription-btn' data-id='${doc.id}' title="Write Prescription"><i class='fa-solid fa-prescription-bottle-medical'></i></button>
+                </div>
+              </td>
+            </tr>`;
+            
+            apptTbodyUpcoming.innerHTML += rowHtml;
+          });
+        }
+        
+        // Attach event listeners
+        const viewBtns = document.querySelectorAll('.view-appt-btn');
+        const approveBtns = document.querySelectorAll('.approve-appt-btn');
+        const rejectBtns = document.querySelectorAll('.reject-appt-btn');
+        const prescriptionBtns = document.querySelectorAll('.write-prescription-btn');
+        const completeBtns = document.querySelectorAll('.complete-appt-btn');
+        
+        console.log('Found buttons:', {
+          view: viewBtns.length,
+          approve: approveBtns.length,
+          reject: rejectBtns.length,
+          prescription: prescriptionBtns.length,
+          complete: completeBtns.length
+        });
+        
+        // Add click handlers
+        viewBtns.forEach(btn => {
+          btn.onclick = function(e) {
+            onViewAppointment(e);
+          };
+        });
+        
+        approveBtns.forEach(btn => {
+          btn.onclick = function(e) {
+            onApproveAppointment(e);
+          };
+        });
+        
+        rejectBtns.forEach(btn => {
+          btn.onclick = function(e) {
+            onRejectAppointment(e);
+          };
+        });
+        
+        prescriptionBtns.forEach(btn => {
+          btn.onclick = function(e) {
+            onWritePrescription(e);
+          };
+        });
+        
+        completeBtns.forEach(btn => {
+          btn.onclick = function(e) {
+            onCompleteAppointment(e);
+          };
+        });
+        
+      } catch (err) {
+        console.error('Error loading appointments:', err);
+        if (apptTbodyToday) apptTbodyToday.innerHTML = '<tr><td colspan="7" class="text-center text-danger">Error loading appointments</td></tr>';
+        if (apptTbodyUpcoming) apptTbodyUpcoming.innerHTML = '<tr><td colspan="6" class="text-center text-danger">Error loading appointments</td></tr>';
+      }
+    };
+
+              // Custom modal functions for appointment viewing
+    function openCustomViewModal() {
+      const modal = document.getElementById('customViewAppointmentModal');
+      modal.style.display = 'flex';
+      
+      // Add click handler for overlay
+      const overlay = modal.querySelector('.custom-modal-overlay');
+      overlay.onclick = function() {
+        closeCustomViewModal();
+      };
+    }
+    
+    function closeCustomViewModal() {
+      document.getElementById('customViewAppointmentModal').style.display = 'none';
     }
 
-    // Initial load
-    loadProducts();
+        async function onViewAppointment(e) {
+      console.log('onViewAppointment function called!');
+      const apptId = e.currentTarget.getAttribute('data-id');
+      console.log('Viewing appointment:', apptId);
+        
+        try {
+      const doc = await firebase.firestore().collection('appointments').doc(apptId).get();
+          if (!doc.exists) {
+            console.error('Appointment not found');
+            return;
+          }
+          
+      const data = doc.data();
+          console.log('Appointment data:', data);
+          
+      let html = `<div class='mb-2'><strong>Date/Time:</strong> ${data.date?new Date(data.date).toLocaleString():''}</div>`;
+      html += `<div class='mb-2'><strong>Patient:</strong> ${data.patient||''}</div>`;
+      html += `<div class='mb-2'><strong>Service:</strong> ${data.service||''}</div>`;
+      html += `<div class='mb-2'><strong>Status:</strong> ${data.status||''}</div>`;
+      html += `<div class='mb-2'><strong>Notes:</strong> ${data.notes||''}</div>`;
+      if (data.status==='rejected' && data.rejectionReason) html += `<div class='mb-2 text-danger'><strong>Rejection Reason:</strong> ${data.rejectionReason}</div>`;
+      if (data.patientEmail) html += `<div class='mb-2'><strong>Email:</strong> ${data.patientEmail}</div>`;
+      if (data.patientPhone) html += `<div class='mb-2'><strong>Phone:</strong> ${data.patientPhone}</div>`;
+          
+          document.getElementById('customViewAppointmentBody').innerHTML = html;
+          
+          // Show custom modal
+          openCustomViewModal();
+          console.log('Custom modal should be visible now');
+          
+        } catch (err) {
+          console.error('Error viewing appointment:', err);
+          alert('Error loading appointment details. Please try again.');
+        }
+    }
+    async function onApproveAppointment(e) {
+      console.log('onApproveAppointment function called!');
+      const apptId = e.currentTarget.getAttribute('data-id');
+      try {
+        await firebase.firestore().collection('appointments').doc(apptId).update({ status: 'approved', rejectionReason: '' });
+        showDocApptToast('Appointment approved!');
+        loadDoctorAppointments();
+      } catch (err) {
+        showDocApptToast(err.message||'Error approving appointment.', true);
+      }
+    }
+    function onRejectAppointment(e) {
+      console.log('onRejectAppointment function called!');
+      const apptId = e.currentTarget.getAttribute('data-id');
+      rejectIdInput.value = apptId;
+      rejectReasonInput.value = '';
+      rejectModal.show();
+    }
+    
+    async function onCompleteAppointment(e) {
+      console.log('onCompleteAppointment function called!');
+      const apptId = e.currentTarget.getAttribute('data-id');
+      try {
+        await firebase.firestore().collection('appointments').doc(apptId).update({ status: 'completed' });
+        showDocApptToast('Appointment marked as completed!');
+        loadDoctorAppointments();
+      } catch (err) {
+        showDocApptToast(err.message||'Error completing appointment.', true);
+      }
+    }
+    
+    async function onWritePrescription(e) {
+      console.log('onWritePrescription function called!');
+      const apptId = e.currentTarget.getAttribute('data-id');
+      const doc = await firebase.firestore().collection('appointments').doc(apptId).get();
+      if (!doc.exists) return;
+      const data = doc.data();
+      
+      // Set appointment data in the prescription modal
+      document.getElementById('prescriptionAppointmentId').value = apptId;
+      document.getElementById('prescriptionPatientName').textContent = data.patient || '';
+      document.getElementById('prescriptionPatientId').value = data.userId || '';
+      
+      // Reset form
+      document.getElementById('prescriptionDiagnosis').value = '';
+      document.getElementById('prescriptionMedication').value = '';
+      document.getElementById('prescriptionInstructions').value = '';
+      document.getElementById('prescriptionDuration').value = '';
+      document.getElementById('prescriptionRefills').value = '';
+      document.getElementById('prescriptionNotes').value = '';
+      
+      // Show the prescription modal
+      const existingPrescriptionModal = bootstrap.Modal.getInstance(document.getElementById('writePrescriptionModal'));
+      if (existingPrescriptionModal) {
+        existingPrescriptionModal.hide();
+        setTimeout(() => {
+          const prescriptionModal = new bootstrap.Modal(document.getElementById('writePrescriptionModal'));
+          prescriptionModal.show();
+        }, 150);
+      } else {
+        const prescriptionModal = new bootstrap.Modal(document.getElementById('writePrescriptionModal'));
+        prescriptionModal.show();
+      }
+    }
+    
+    // Handle prescription form submission
+    document.getElementById('writePrescriptionForm').onsubmit = async function(e) {
+      e.preventDefault();
+      
+      const appointmentId = document.getElementById('prescriptionAppointmentId').value;
+      const patientId = document.getElementById('prescriptionPatientId').value;
+      const diagnosis = document.getElementById('prescriptionDiagnosis').value.trim();
+      const medication = document.getElementById('prescriptionMedication').value.trim();
+      const instructions = document.getElementById('prescriptionInstructions').value.trim();
+      const duration = document.getElementById('prescriptionDuration').value.trim();
+      const refills = document.getElementById('prescriptionRefills').value.trim();
+      const notes = document.getElementById('prescriptionNotes').value.trim();
+      
+      if (!diagnosis || !medication) {
+        showDocApptToast('Please fill in diagnosis and medication.', true);
+        return;
+      }
+      
+      try {
+        await firebase.firestore().collection('prescriptions').add({
+          appointmentId: appointmentId,
+          patientId: patientId,
+          doctorId: currentDoctor.uid,
+          diagnosis: diagnosis,
+          medication: medication,
+          instructions: instructions,
+          duration: duration,
+          refills: refills,
+          notes: notes,
+          createdAt: firebase.firestore.FieldValue.serverTimestamp()
+        });
+        
+        // Create notification for the patient
+        try {
+          await firebase.firestore().collection('notifications').add({
+            patientId: patientId,
+            title: 'New Prescription Available',
+            message: `Dr. ${currentDoctor.displayName || currentDoctor.email} has written you a prescription`,
+            type: 'prescription',
+            read: false,
+            createdAt: firebase.firestore.FieldValue.serverTimestamp()
+          });
+        } catch (err) {
+          console.error('Error creating patient notification:', err);
+        }
+        
+        showDocApptToast('Prescription saved successfully!');
+        
+        // Hide the modal
+        const prescriptionModal = bootstrap.Modal.getInstance(document.getElementById('writePrescriptionModal'));
+        prescriptionModal.hide();
+        
+      } catch (err) {
+        showDocApptToast('Failed to save prescription: ' + err.message, true);
+      }
+    };
+    rejectForm.onsubmit = async function(e) {
+      e.preventDefault();
+      const apptId = rejectIdInput.value;
+      const reason = rejectReasonInput.value.trim();
+      try {
+        await firebase.firestore().collection('appointments').doc(apptId).update({ status: 'rejected', rejectionReason: reason });
+        showDocApptToast('Appointment rejected.');
+        rejectModal.hide();
+        loadDoctorAppointments();
+      } catch (err) {
+        showDocApptToast(err.message||'Error rejecting appointment.', true);
+      }
+    };
+
+    // Filter and Search Logic
+    function applyFiltersAndSearch() {
+      const selectedStatus = statusFilterSelect.value;
+      const searchTerm = searchInput.value.toLowerCase();
+      const todayRows = Array.from(apptTbodyToday.children);
+      const upcomingRows = Array.from(apptTbodyUpcoming.children);
+
+      todayRows.forEach(row => {
+        // Skip loading/empty message rows
+        if (row.cells.length === 1) return;
+        
+        // Add null checks for cells
+        if (!row.cells || row.cells.length < 7) return;
+        
+        const patientCell = row.cells[2]; // Patient is at index 2 (after checkbox)
+        const serviceCell = row.cells[3]; // Service is at index 3
+        const statusCell = row.cells[4]; // Status is at index 4
+        
+        if (!patientCell || !serviceCell || !statusCell) return;
+        
+        const patientText = patientCell.textContent.toLowerCase();
+        const serviceText = serviceCell.textContent.toLowerCase();
+        const statusText = statusCell.textContent.toLowerCase();
+        const isVisible = (selectedStatus === '' || statusText.includes(selectedStatus)) &&
+                          (patientText.includes(searchTerm) || serviceText.includes(searchTerm));
+        row.style.display = isVisible ? '' : 'none';
+      });
+
+      upcomingRows.forEach(row => {
+        // Skip loading/empty message rows
+        if (row.cells.length === 1) return;
+        
+        // Add null checks for cells
+        if (!row.cells || row.cells.length < 6) return;
+        
+        const patientCell = row.cells[1]; // Patient is at index 1
+        const serviceCell = row.cells[2]; // Service is at index 2
+        const statusCell = row.cells[3]; // Status is at index 3
+        
+        if (!patientCell || !serviceCell || !statusCell) return;
+        
+        const patientText = patientCell.textContent.toLowerCase();
+        const serviceText = serviceCell.textContent.toLowerCase();
+        const statusText = statusCell.textContent.toLowerCase();
+        const isVisible = (selectedStatus === '' || statusText.includes(selectedStatus)) &&
+                          (patientText.includes(searchTerm) || serviceText.includes(searchTerm));
+        row.style.display = isVisible ? '' : 'none';
+      });
+    }
+
+    if (statusFilterSelect) {
+    statusFilterSelect.addEventListener('change', applyFiltersAndSearch);
+    }
+    if (searchInput) {
+    searchInput.addEventListener('input', applyFiltersAndSearch);
+    }
+
+    // Initial load and tab logic
+      console.log('Starting initial appointment load...');
+      try {
+    loadDoctorAppointments();
+    apptTabs.show(); // Ensure the first tab is active
+      } catch (err) {
+        console.error('Error in initial appointment load:', err);
+      }
+
+    // Handle tab changes
+    document.getElementById('apptTabs').addEventListener('shown.bs.tab', function (event) {
+      const target = event.target;
+      if (target.id === 'today-tab') {
+        apptTbodyToday.innerHTML = '<tr><td colspan="6" class="text-center text-muted">Loading appointments...</td></tr>';
+        loadDoctorAppointments();
+      } else if (target.id === 'upcoming-tab') {
+        apptTbodyUpcoming.innerHTML = '<tr><td colspan="6" class="text-center text-muted">Loading appointments...</td></tr>';
+        loadDoctorAppointments();
+      }
+    });
+
+    // Bulk Actions Logic
+    function updateBulkActions() {
+      const selectedAppts = Array.from(apptTbodyToday.querySelectorAll('.appt-checkbox:checked')).map(cb => cb.getAttribute('data-id'));
+      bulkApproveBtn.disabled = selectedAppts.length === 0;
+      bulkRejectBtn.disabled = selectedAppts.length === 0;
+      bulkCompleteBtn.disabled = selectedAppts.length === 0;
+      bulkCountSpan.textContent = `${selectedAppts.length} selected`;
+      
+      if (selectedAppts.length > 0) {
+        bulkActionsBar.classList.remove('d-none');
+      } else {
+        bulkActionsBar.classList.add('d-none');
+      }
+    }
+
+    if (selectAllApptsCheckbox) {
+      selectAllApptsCheckbox.addEventListener('change', function() {
+        apptTbodyToday.querySelectorAll('.appt-checkbox').forEach(cb => {
+          cb.checked = this.checked;
+        });
+        updateBulkActions();
+      });
+    }
+
+    // Listen for changes on the table body
+    if (apptTbodyToday) {
+      apptTbodyToday.addEventListener('change', updateBulkActions);
+    }
+
+    if (bulkApproveBtn) {
+      bulkApproveBtn.addEventListener('click', async function() {
+        const selectedApptIds = Array.from(apptTbodyToday.querySelectorAll('.appt-checkbox:checked')).map(cb => cb.getAttribute('data-id'));
+        if (selectedApptIds.length === 0) {
+          showDocApptToast('Please select appointments to approve.', true);
+          return;
+        }
+        if (!confirm(`Are you sure you want to approve ${selectedApptIds.length} appointment(s)? This action cannot be undone.`)) {
+          return;
+        }
+        try {
+          await Promise.all(selectedApptIds.map(id =>
+            firebase.firestore().collection('appointments').doc(id).update({ status: 'approved', rejectionReason: '' })
+          ));
+          showDocApptToast(`${selectedApptIds.length} appointments approved.`);
+          loadDoctorAppointments();
+        } catch (err) {
+          showDocApptToast(err.message||'Error approving appointments.', true);
+        }
+      });
+    }
+
+    if (bulkRejectBtn) {
+      bulkRejectBtn.addEventListener('click', async function() {
+        const selectedApptIds = Array.from(apptTbodyToday.querySelectorAll('.appt-checkbox:checked')).map(cb => cb.getAttribute('data-id'));
+        if (selectedApptIds.length === 0) {
+          showDocApptToast('Please select appointments to reject.', true);
+          return;
+        }
+        if (!confirm(`Are you sure you want to reject ${selectedApptIds.length} appointment(s)? This action cannot be undone.`)) {
+          return;
+        }
+        try {
+          await Promise.all(selectedApptIds.map(id => {
+            const rejectReason = prompt('Enter rejection reason for all selected appointments:');
+            return firebase.firestore().collection('appointments').doc(id).update({ status: 'rejected', rejectionReason: rejectReason });
+          }));
+          showDocApptToast(`${selectedApptIds.length} appointments rejected.`);
+          loadDoctorAppointments();
+        } catch (err) {
+          showDocApptToast(err.message||'Error rejecting appointments.', true);
+        }
+      });
+    }
+
+    if (bulkCompleteBtn) {
+      bulkCompleteBtn.addEventListener('click', async function() {
+        const selectedApptIds = Array.from(apptTbodyToday.querySelectorAll('.appt-checkbox:checked')).map(cb => cb.getAttribute('data-id'));
+        if (selectedApptIds.length === 0) {
+          showDocApptToast('Please select appointments to mark as completed.', true);
+          return;
+        }
+        if (!confirm(`Are you sure you want to mark ${selectedApptIds.length} appointment(s) as completed? This action cannot be undone.`)) {
+          return;
+        }
+        try {
+          await Promise.all(selectedApptIds.map(id =>
+            firebase.firestore().collection('appointments').doc(id).update({ status: 'completed' })
+          ));
+          showDocApptToast(`${selectedApptIds.length} appointments marked as completed.`);
+          loadDoctorAppointments();
+        } catch (err) {
+          showDocApptToast(err.message||'Error marking appointments as completed.', true);
+        }
+      });
+    }
+
+    // Hide bulk actions bar initially
+    if (bulkActionsBar) {
+      bulkActionsBar.classList.add('d-none');
+    }
+
+    // Upload Lab Results logic
+    const uploadLabBtn = document.getElementById('uploadLabBtn');
+    const exportCsvBtn = document.getElementById('exportCsvBtn');
+
+      // Custom Modal Functions
+      function openCustomUploadModal() {
+        console.log('Opening custom upload modal...');
+        const modal = document.getElementById('customUploadLabModal');
+        if (modal) {
+          console.log('Modal found, opening...');
+          modal.style.display = 'flex';
+          populateCustomLabPatientDropdown();
+          const form = document.getElementById('customUploadLabForm');
+          if (form) {
+            form.reset();
+          }
+          
+          // Add click handler for overlay
+          const overlay = modal.querySelector('.custom-modal-overlay');
+          overlay.onclick = function() {
+            closeCustomUploadModal();
+          };
+          
+          // Focus on first input
+          setTimeout(() => {
+            const firstInput = document.getElementById('customLabPatient');
+            if (firstInput) firstInput.focus();
+          }, 100);
+        } else {
+          console.error('Custom upload modal not found!');
+          alert('Modal element not found! Check HTML structure.');
+        }
+      }
+      
+      function closeCustomUploadModal() {
+        console.log('Closing custom upload modal...');
+        const modal = document.getElementById('customUploadLabModal');
+        if (modal) {
+          modal.style.display = 'none';
+        }
+      }
+
+          // Populate patient dropdown for custom modal
+      async function populateCustomLabPatientDropdown() {
+        const customLabPatientSelect = document.getElementById('customLabPatient');
+        customLabPatientSelect.innerHTML = '<option value="">Loading patients...</option>';
+        try {
+          const snap = await firebase.firestore().collection('patients').where('doctorId', '==', currentDoctor.uid).get();
+          let options = '<option value="">Select patient</option>';
+          
+          // Add some test options if no patients found
+          if (snap.empty) {
+            options += '<option value="test1">Test Patient 1 (123-456-7890)</option>';
+            options += '<option value="test2">Test Patient 2 (098-765-4321)</option>';
+          } else {
+      snap.forEach(doc => {
+              const data = doc.data();
+              options += `<option value="${doc.id}">${data.firstName} ${data.lastName} (${data.phone})</option>`;
+            });
+          }
+          
+          customLabPatientSelect.innerHTML = options;
+          console.log('Custom patient dropdown populated successfully');
+        } catch (err) {
+          console.error('Error populating custom patient dropdown:', err);
+          customLabPatientSelect.innerHTML = '<option value="">Error loading patients</option>';
+        }
+      }
+
+          // Upload Lab Results logic - using custom modal
+      if (uploadLabBtn) {
+        uploadLabBtn.onclick = function() {
+          console.log('Upload button clicked');
+          // Simple test - show alert first
+          alert('Upload button clicked! Modal should open next.');
+          openCustomUploadModal();
+        };
+      } else {
+        console.error('Upload lab button not found!');
+      }
+      // Custom form submission
+      const customUploadForm = document.getElementById('customUploadLabForm');
+      if (customUploadForm) {
+        customUploadForm.onsubmit = async function(e) {
+      e.preventDefault();
+          console.log('Custom form submitted');
+          
+          const patientId = document.getElementById('customLabPatient').value;
+          const testType = document.getElementById('customLabTestType').value;
+          const results = document.getElementById('customLabResults').value;
+          const testDate = document.getElementById('customLabDate').value;
+          const file = document.getElementById('customLabFile').files[0];
+
+          console.log('Custom form values:', { patientId, testType, results, testDate, file });
+
+      if (!patientId || !testType || !testDate) {
+        showDocApptToast('Please select a patient, test type, and test date.', true);
+        return;
+      }
+
+      try {
+        const labResultRef = firebase.storage().ref(`labResults/${patientId}/${testType}-${testDate}.pdf`); // Assuming PDF for now
+        if (file) {
+          await labResultRef.put(file);
+        }
+        const fileUrl = file ? await labResultRef.getDownloadURL() : null;
+
+        await firebase.firestore().collection('labResults').add({
+          patientId: patientId,
+          testType: testType,
+          results: results,
+          testDate: firebase.firestore.Timestamp.fromDate(new Date(testDate)),
+          fileUrl: fileUrl,
+          createdAt: firebase.firestore.FieldValue.serverTimestamp()
+        });
+
+                  showDocApptToast('Lab result uploaded successfully!');
+          closeCustomUploadModal();
+          loadDoctorAppointments(); // Refresh appointments to show new lab result
+      } catch (err) {
+          console.error('Error uploading lab result:', err);
+          showDocApptToast(err.message || 'Error uploading lab result.', true);
+      }
+    };
+      } else {
+        console.error('Custom upload form not found!');
+      }
+    // Export to CSV logic
+    if (exportCsvBtn) {
+      exportCsvBtn.onclick = function() {
+        // Gather visible rows from the current table view
+        let rows = [];
+        const activeTab = document.querySelector('.tab-pane.active');
+        const tbody = activeTab ? activeTab.querySelector('tbody') : null;
+        if (tbody) {
+          Array.from(tbody.children).forEach(row => {
+            if (row.style.display === 'none' || row.cells.length === 1) return; // Skip loading/empty rows
+            const cells = Array.from(row.children).map(td => td.textContent.trim());
+            rows.push(cells);
+          });
+        }
+        if (rows.length === 0) {
+          showDocApptToast('No appointments to export.', true);
+          return;
+        }
+        
+        // Create CSV content with headers
+        const headers = ['Date', 'Patient', 'Service', 'Status', 'Notes'];
+        const csvContent = [
+          headers.join(','),
+          ...rows.map(row => {
+            // Remove checkbox column for today tab, adjust indices
+            const dataRow = row.length > 6 ? row.slice(1, 6) : row.slice(0, 5);
+            return dataRow.map(cell => `"${cell.replace(/"/g, '""')}"`).join(',');
+          })
+        ].join('\n');
+        
+        // Download CSV file
+        const blob = new Blob([csvContent], { type: 'text/csv;charset=utf-8;' });
+        const link = document.createElement('a');
+        const url = URL.createObjectURL(blob);
+        link.setAttribute('href', url);
+        link.setAttribute('download', `appointments_${new Date().toISOString().split('T')[0]}.csv`);
+        link.style.visibility = 'hidden';
+        document.body.appendChild(link);
+        link.click();
+        document.body.removeChild(link);
+        showDocApptToast('Appointments exported successfully!');
+      };
+    }
   </script>
 </body>
 </html> 
