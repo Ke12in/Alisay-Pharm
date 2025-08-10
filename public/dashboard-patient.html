@@ -3,243 +3,565 @@
 <head>
   <meta charset="UTF-8">
   <meta name="viewport" content="width=device-width, initial-scale=1.0">
-  <title>Patient Dashboard - Alisay Medical Center</title>
+  <title>Sales Dashboard - Alisay Medical Center</title>
   <!-- Bootstrap CSS -->
   <link href="https://cdn.jsdelivr.net/npm/bootstrap@5.3.2/dist/css/bootstrap.min.css" rel="stylesheet">
   <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.4.0/css/all.min.css">
   <style>
-    html, body { height: 100%; }
     body {
       min-height: 100vh;
-      height: 100%;
       background: linear-gradient(135deg, #e0eafc 0%, #cfdef3 100%);
-      display: flex;
-      flex-direction: column;
-    }
-    .dashboard-container {
-      display: flex;
-      min-height: 100vh;
     }
     .sidebar {
       min-width: 220px;
       max-width: 220px;
-      background: #1a237e;
-      color: #fff;
-      display: flex;
-      flex-direction: column;
-      padding: 2rem 1rem 1rem 1rem;
-      box-shadow: 2px 0 8px rgba(31,38,135,0.08);
-    }
-    .sidebar .nav-link {
-      color: #fff;
-      font-weight: 500;
-      margin-bottom: 1rem;
-      border-radius: 0.5rem;
-      transition: background 0.2s;
-    }
-    .sidebar .nav-link.active, .sidebar .nav-link:hover {
-      background: #3949ab;
-      color: #fff;
-    }
-    .sidebar .sidebar-logo {
-      font-size: 1.5rem;
-      font-weight: bold;
-      margin-bottom: 2rem;
-      text-align: center;
-      letter-spacing: 1px;
-    }
-    .main-content {
-      flex: 1 1 auto;
-      padding: 0;
-      display: flex;
-      flex-direction: column;
-      min-width: 0;
-    }
-    .topbar {
       background: #fff;
-      box-shadow: 0 2px 8px rgba(31,38,135,0.06);
-      padding: 1rem 2rem;
-      display: flex;
-      align-items: center;
-      justify-content: flex-end;
-      min-height: 64px;
-    }
-    .topbar .profile {
-      display: flex;
-      align-items: center;
-      gap: 0.75rem;
-      cursor: pointer;
-    }
-    .topbar .profile-img {
-      width: 40px;
-      height: 40px;
-      border-radius: 50%;
-      object-fit: cover;
-      background: #e3e3e3;
-      display: flex;
-      align-items: center;
-      justify-content: center;
-      font-size: 1.5rem;
-      color: #3949ab;
-    }
-    .content-area {
-      flex: 1 1 auto;
-      padding: 2rem;
-      background: transparent;
-      min-height: 0;
-    }
-    .sidebar-mobile-overlay {
-      display: none;
-      position: fixed;
-      top: 0; left: 0; right: 0; bottom: 0;
-      background: rgba(0,0,0,0.3);
-      z-index: 1999;
-    }
-    .sidebar-mobile-overlay.active {
-      display: block;
-    }
-    .sidebar-mobile {
+      border-right: 1px solid #e3e3e3;
+      min-height: 100vh;
       position: fixed;
       top: 0;
       left: 0;
-      width: 220px;
-      height: 100vh;
-      background: #1a237e;
-      color: #fff;
+      z-index: 1030;
+      padding-top: 60px;
+    }
+    .sidebar .nav-link.active {
+      background: #e0eafc;
+      font-weight: 600;
+      color: #1976d2 !important;
+    }
+    .sidebar .nav-link {
+      color: #333;
+      border-radius: 0.5rem;
+      margin-bottom: 0.5rem;
+      transition: background 0.2s;
+    }
+    .sidebar .nav-link:hover {
+      background: #f0f4fa;
+      color: #1976d2 !important;
+    }
+    .topbar {
+      height: 60px;
+      background: #fff;
+      border-bottom: 1px solid #e3e3e3;
       display: flex;
-      flex-direction: column;
-      padding: 2rem 1rem 1rem 1rem;
-      box-shadow: 2px 0 8px rgba(31,38,135,0.08);
-      z-index: 2000;
-      transition: transform 0.3s ease;
-      transform: translateX(-100%);
+      align-items: center;
+      justify-content: space-between;
+      padding: 0 2rem 0 240px;
+      position: sticky;
+      top: 0;
+      z-index: 1020;
     }
-    .sidebar-mobile.show {
-      transform: translateX(0);
+    .main-content {
+      margin-left: 220px;
+      padding: 2rem 2rem 1rem 2rem;
+      min-height: 90vh;
     }
-    .sidebar-toggle-btn {
+    .section {
       display: none;
     }
-    @media (max-width: 991.98px) {
-      .dashboard-container {
-        flex-direction: column;
-      }
-      .sidebar {
-        display: none !important;
-      }
-      .sidebar-toggle-btn {
-        display: inline-block !important;
-        position: fixed;
-        top: 16px;
-        left: 16px;
-        z-index: 2100;
-      }
-      .sidebar-mobile {
-        display: flex;
-      }
-      .sidebar .nav {
-        flex-direction: row;
-        width: 100%;
-        justify-content: space-around;
-      }
-      .sidebar .sidebar-logo {
-        display: none;
-      }
+    .section.active {
+      display: block;
+      animation: fadeInUp 0.7s;
     }
-    @media (min-width: 992px) {
-      .sidebar-mobile, .sidebar-mobile-overlay, .sidebar-toggle-btn {
-        display: none !important;
-      }
+    @keyframes fadeInUp {
+      from { opacity: 0; transform: translateY(30px); }
+      to { opacity: 1; transform: none; }
+    }
+    .dark-mode {
+      background: #23272f !important;
+      color: #f1f1f1 !important;
+    }
+    .dark-mode .sidebar, .dark-mode .topbar {
+      background: #23272f !important;
+      color: #f1f1f1 !important;
+      border-color: #333 !important;
+    }
+    .dark-mode .sidebar .nav-link {
+      color: #f1f1f1 !important;
+    }
+    .dark-mode .sidebar .nav-link.active {
+      background: #2d3440 !important;
+      color: #90caf9 !important;
+    }
+    .dark-mode .main-content {
+      background: #23272f !important;
+      color: #f1f1f1 !important;
+    }
+    .dark-mode .card {
+      background: #2d3440 !important;
+      color: #f1f1f1 !important;
+    }
+    .dark-mode .btn {
+      border-color: #444 !important;
+    }
+    .dark-mode .form-control {
+      background: #23272f !important;
+      color: #f1f1f1 !important;
+      border-color: #444 !important;
     }
   </style>
 </head>
 <body>
-  <div class="dashboard-container">
-    <!-- Desktop Sidebar -->
-    <aside class="sidebar">
-      <div class="sidebar-logo">
-        <i class="fa-solid fa-hospital"></i> Alisay Patient
-      </div>
-      <nav class="nav flex-column">
-        <a class="nav-link active" href="dashboard-patient.html"><i class="fa-solid fa-house me-2"></i>Dashboard</a>
-        <a class="nav-link" href="patient-appointments.html"><i class="fa-solid fa-calendar-check me-2"></i>Appointments</a>
-        <a class="nav-link" href="patient-prescriptions.html"><i class="fa-solid fa-file-medical me-2"></i>Prescriptions</a>
-        <a class="nav-link" href="patient-complaints.html"><i class="fa-solid fa-comment-medical me-2"></i>Complaints</a>
-        <a class="nav-link" href="patient-profile.html"><i class="fa-solid fa-user me-2"></i>Profile</a>
-        <a class="nav-link text-danger" href="#" onclick="logout()"><i class="fa-solid fa-sign-out-alt me-2"></i>Logout</a>
-      </nav>
-    </aside>
-    <!-- Mobile Sidebar and Toggle -->
-    <div class="sidebar-mobile" id="sidebarMobile">
-      <div class="sidebar-logo mb-4">
-        <i class="fa-solid fa-hospital"></i> Alisay Patient
-      </div>
-      <nav class="nav flex-column">
-        <a class="nav-link active" href="dashboard-patient.html"><i class="fa-solid fa-house me-2"></i>Dashboard</a>
-        <a class="nav-link" href="patient-appointments.html"><i class="fa-solid fa-calendar-check me-2"></i>Appointments</a>
-        <a class="nav-link" href="patient-prescriptions.html"><i class="fa-solid fa-file-medical me-2"></i>Prescriptions</a>
-        <a class="nav-link" href="patient-complaints.html"><i class="fa-solid fa-comment-medical me-2"></i>Complaints</a>
-        <a class="nav-link" href="patient-profile.html"><i class="fa-solid fa-user me-2"></i>Profile</a>
-        <a class="nav-link text-danger" href="#" onclick="logout()"><i class="fa-solid fa-sign-out-alt me-2"></i>Logout</a>
-      </nav>
+  <!-- Sidebar -->
+  <nav class="sidebar d-flex flex-column p-3 shadow-sm">
+    <a href="#" class="d-flex align-items-center mb-3 mb-md-0 me-md-auto text-decoration-none">
+      <img src="https://img.icons8.com/ios-filled/100/4a90e2/hospital-room.png" alt="Logo" style="width:40px; height:40px; margin-right:10px;">
+      <span class="fs-5 fw-bold">Sales</span>
+    </a>
+    <hr>
+    <ul class="nav nav-pills flex-column mb-auto">
+      <li><a href="#" class="nav-link active" onclick="showSection('inventory')"><i class="fas fa-boxes"></i> Inventory</a></li>
+      <li><a href="#" class="nav-link" onclick="showSection('sales')"><i class="fas fa-cash-register"></i> Sales</a></li>
+      <li><a href="#" class="nav-link" onclick="showSection('records')"><i class="fas fa-receipt"></i> Sales Records</a></li>
+      <li><a href="#" class="nav-link" onclick="showSection('customers')"><i class="fas fa-users"></i> Customers</a></li>
+      <li><a href="#" class="nav-link" onclick="showSection('reports')"><i class="fas fa-chart-line"></i> Reports</a></li>
+      <li><a href="#" class="nav-link" onclick="showSection('notifications')"><i class="fas fa-bell"></i> Notifications</a></li>
+      <li><a href="#" class="nav-link" onclick="showSection('profile')"><i class="fas fa-user"></i> Profile</a></li>
+    </ul>
+  </nav>
+  <!-- Topbar -->
+  <div class="topbar shadow-sm">
+    <div class="d-flex align-items-center">
+      <h4 class="mb-0"><i class="fas fa-store-alt me-2"></i>Sales Dashboard</h4>
     </div>
-    <div class="sidebar-mobile-overlay" id="sidebarMobileOverlay"></div>
-    <button class="btn btn-primary sidebar-toggle-btn d-lg-none" id="sidebarToggleBtn" title="Open menu"><i class="fa-solid fa-bars"></i></button>
-    <div class="main-content">
-      <div class="topbar">
-        <div class="profile" id="patient-profile-link">
-          <div class="profile-img"><i class="fa-solid fa-user-injured"></i></div>
-          <span id="patient-name">Patient</span>
-        </div>
-      </div>
-      <div class="content-area">
-        <div class="mb-4">
-          <div class="text-center mb-4">
-            <img src="https://img.icons8.com/ios-filled/100/4a90e2/hospital-room.png" alt="Logo" class="logo mb-2">
-            <h2 class="mb-2" id="welcome-name">Welcome!</h2>
-            <p class="text-muted mb-4">Here’s a summary of your health activity.</p>
-          </div>
-          <div class="row g-4 mb-4">
-            <div class="col-md-4">
-              <div class="card text-center p-3">
-                <div class="fs-2 text-primary"><i class="fa-solid fa-calendar-check"></i></div>
-                <div class="fw-bold fs-4" id="card-appointments">--</div>
-                <div class="text-muted">Upcoming Appointments</div>
-              </div>
-            </div>
-            <div class="col-md-4">
-              <div class="card text-center p-3">
-                <div class="fs-2 text-success"><i class="fa-solid fa-file-medical"></i></div>
-                <div class="fw-bold fs-4" id="card-prescriptions">--</div>
-                <div class="text-muted">Active Prescriptions</div>
-              </div>
-            </div>
-            <div class="col-md-4">
-              <div class="card text-center p-3">
-                <div class="fs-2 text-warning"><i class="fa-solid fa-comment-medical"></i></div>
-                <div class="fw-bold fs-4" id="card-complaints">--</div>
-                <div class="text-muted">Complaints</div>
-              </div>
-            </div>
-            <div class="col-md-4">
-              <div class="card text-center p-3">
-                <div class="fs-2 text-info"><i class="fa-solid fa-flask"></i></div>
-                <div class="fw-bold fs-4" id="card-lab-results">--</div>
-                <div class="text-muted">Lab Results</div>
-              </div>
-            </div>
-          </div>
-          <div class="card p-4">
-            <h5 class="mb-3">Recent Activity</h5>
-            <ul class="list-group" id="recent-activity-list">
-              <li class="list-group-item text-muted">Loading recent activity...</li>
-            </ul>
-          </div>
-        </div>
-      </div>
+    <div class="d-flex align-items-center gap-3">
+      <button class="btn btn-outline-secondary" id="darkModeToggle" title="Toggle dark mode"><i class="fas fa-moon"></i></button>
+      <button class="btn btn-outline-danger" onclick="logout()"><i class="fas fa-sign-out-alt"></i> Logout</button>
     </div>
   </div>
-  <footer class="text-center py-3 bg-light mt-4 shadow-sm">
+  <!-- Main Content -->
+  <div class="main-content">
+    <div id="inventory" class="section active">
+      <h3><i class="fas fa-boxes me-2"></i>Inventory Management</h3>
+      <div class="d-flex justify-content-between align-items-center mb-3">
+        <span class="text-muted">Manage your product inventory below.</span>
+        <button class="btn btn-primary" data-bs-toggle="modal" data-bs-target="#addProductModal"><i class="fas fa-plus"></i> Add Product</button>
+      </div>
+      <div class="table-responsive">
+        <table class="table table-hover align-middle">
+          <thead class="table-light">
+            <tr>
+              <th>Name</th>
+              <th>Category</th>
+              <th>Stock</th>
+              <th>Price</th>
+              <th>Status</th>
+              <th>Actions</th>
+            </tr>
+          </thead>
+          <tbody id="productTableBody">
+            <tr>
+              <td colspan="6" class="text-center text-muted">No products yet.</td>
+            </tr>
+          </tbody>
+        </table>
+      </div>
+    </div>
+    <!-- Add Product Modal -->
+    <div class="modal fade" id="addProductModal" tabindex="-1" aria-labelledby="addProductModalLabel" aria-hidden="true">
+      <div class="modal-dialog">
+        <div class="modal-content">
+          <form id="addProductForm">
+            <div class="modal-header">
+              <h5 class="modal-title" id="addProductModalLabel">Add Product</h5>
+              <button type="button" class="btn-close" data-bs-dismiss="modal" aria-label="Close"></button>
+            </div>
+            <div class="modal-body">
+              <div class="mb-3">
+                <label for="productName" class="form-label">Product Name</label>
+                <input type="text" class="form-control" id="productName" required>
+              </div>
+              <div class="mb-3">
+                <label for="productCategory" class="form-label">Category</label>
+                <input type="text" class="form-control" id="productCategory" required>
+              </div>
+              <div class="mb-3">
+                <label for="productStock" class="form-label">Stock</label>
+                <input type="number" class="form-control" id="productStock" min="0" required>
+              </div>
+              <div class="mb-3">
+                <label for="productPrice" class="form-label">Price</label>
+                <input type="number" class="form-control" id="productPrice" min="0" step="0.01" required>
+              </div>
+              <div class="mb-3">
+                <label for="productStatus" class="form-label">Status</label>
+                <select class="form-select" id="productStatus" required>
+                  <option value="Active">Active</option>
+                  <option value="Inactive">Inactive</option>
+                </select>
+              </div>
+            </div>
+            <div class="modal-footer">
+              <button type="button" class="btn btn-secondary" data-bs-dismiss="modal">Cancel</button>
+              <button type="submit" class="btn btn-primary">Add Product</button>
+            </div>
+          </form>
+        </div>
+      </div>
+    </div>
+    <!-- Edit Product Modal -->
+    <div class="modal fade" id="editProductModal" tabindex="-1" aria-labelledby="editProductModalLabel" aria-hidden="true">
+      <div class="modal-dialog">
+        <div class="modal-content">
+          <form id="editProductForm">
+            <div class="modal-header">
+              <h5 class="modal-title" id="editProductModalLabel">Edit Product</h5>
+              <button type="button" class="btn-close" data-bs-dismiss="modal" aria-label="Close"></button>
+            </div>
+            <div class="modal-body">
+              <input type="hidden" id="editProductId">
+              <div class="mb-3">
+                <label for="editProductName" class="form-label">Product Name</label>
+                <input type="text" class="form-control" id="editProductName" required>
+              </div>
+              <div class="mb-3">
+                <label for="editProductCategory" class="form-label">Category</label>
+                <input type="text" class="form-control" id="editProductCategory" required>
+              </div>
+              <div class="mb-3">
+                <label for="editProductStock" class="form-label">Stock</label>
+                <input type="number" class="form-control" id="editProductStock" min="0" required>
+              </div>
+              <div class="mb-3">
+                <label for="editProductPrice" class="form-label">Price</label>
+                <input type="number" class="form-control" id="editProductPrice" min="0" step="0.01" required>
+              </div>
+              <div class="mb-3">
+                <label for="editProductStatus" class="form-label">Status</label>
+                <select class="form-select" id="editProductStatus" required>
+                  <option value="Active">Active</option>
+                  <option value="Inactive">Inactive</option>
+                </select>
+              </div>
+            </div>
+            <div class="modal-footer">
+              <button type="button" class="btn btn-secondary" data-bs-dismiss="modal">Cancel</button>
+              <button type="submit" class="btn btn-primary">Save Changes</button>
+            </div>
+          </form>
+        </div>
+      </div>
+    </div>
+    <div id="sales" class="section">
+      <h3><i class="fas fa-cash-register me-2"></i>Process Sales/Transactions</h3>
+      <form id="processSaleForm" class="card p-4 mb-3" style="max-width: 600px;">
+        <div class="mb-3">
+          <label for="saleProduct" class="form-label">Product</label>
+          <select class="form-select" id="saleProduct" required>
+            <option value="">Select product</option>
+            <!-- Product options will be populated dynamically -->
+          </select>
+        </div>
+        <div class="row mb-3">
+          <div class="col-md-6">
+            <label for="salePrice" class="form-label">Price</label>
+            <input type="number" class="form-control" id="salePrice" readonly>
+          </div>
+          <div class="col-md-6">
+            <label for="saleStock" class="form-label">Available Stock</label>
+            <input type="number" class="form-control" id="saleStock" readonly>
+          </div>
+        </div>
+        <div class="row mb-3">
+          <div class="col-md-6">
+            <label for="saleQuantity" class="form-label">Quantity</label>
+            <input type="number" class="form-control" id="saleQuantity" min="1" required>
+          </div>
+          <div class="col-md-6">
+            <label for="saleTotal" class="form-label">Total</label>
+            <input type="number" class="form-control" id="saleTotal" readonly>
+          </div>
+        </div>
+        <div class="mb-3">
+          <label for="saleCustomer" class="form-label">Customer</label>
+          <select class="form-select" id="saleCustomer">
+            <option value="">Select customer</option>
+            <!-- Customer options will be populated dynamically -->
+          </select>
+          <div class="form-text">Or <a href="#" data-bs-toggle="modal" data-bs-target="#addCustomerModal">add new customer</a></div>
+        </div>
+        <div class="row mb-3">
+          <div class="col-md-6">
+            <label for="saleDate" class="form-label">Date</label>
+            <input type="date" class="form-control" id="saleDate" required>
+          </div>
+          <div class="col-md-6">
+            <label for="salePayment" class="form-label">Payment Method</label>
+            <select class="form-select" id="salePayment" required>
+              <option value="Cash">Cash</option>
+              <option value="Card">Card</option>
+              <option value="Mobile">Mobile</option>
+            </select>
+          </div>
+        </div>
+        <div id="saleMessage" class="mb-3"></div>
+        <button type="submit" class="btn btn-success w-100"><i class="fas fa-check"></i> Process Sale</button>
+      </form>
+    </div>
+    <!-- Add Customer Modal -->
+    <div class="modal fade" id="addCustomerModal" tabindex="-1" aria-labelledby="addCustomerModalLabel" aria-hidden="true">
+      <div class="modal-dialog">
+        <div class="modal-content">
+          <form id="addCustomerForm">
+            <div class="modal-header">
+              <h5 class="modal-title" id="addCustomerModalLabel">Add Customer</h5>
+              <button type="button" class="btn-close" data-bs-dismiss="modal" aria-label="Close"></button>
+            </div>
+            <div class="modal-body">
+              <div class="mb-3">
+                <label for="customerName" class="form-label">Customer Name</label>
+                <input type="text" class="form-control" id="customerName" required>
+              </div>
+              <div class="mb-3">
+                <label for="customerContact" class="form-label">Contact</label>
+                <input type="text" class="form-control" id="customerContact">
+              </div>
+            </div>
+            <div class="modal-footer">
+              <button type="button" class="btn btn-secondary" data-bs-dismiss="modal">Cancel</button>
+              <button type="submit" class="btn btn-primary">Add Customer</button>
+            </div>
+          </form>
+        </div>
+      </div>
+    </div>
+    <div id="records" class="section">
+      <h3><i class="fas fa-receipt me-2"></i>Sales Records</h3>
+      <div class="card p-3 mb-3">
+        <div class="row g-2 align-items-end mb-2">
+          <div class="col-md-3">
+            <label for="filterDate" class="form-label mb-0">Date</label>
+            <input type="date" class="form-control" id="filterDate">
+          </div>
+          <div class="col-md-3">
+            <label for="filterProduct" class="form-label mb-0">Product</label>
+            <input type="text" class="form-control" id="filterProduct" placeholder="Product name">
+          </div>
+          <div class="col-md-3">
+            <label for="filterCustomer" class="form-label mb-0">Customer</label>
+            <input type="text" class="form-control" id="filterCustomer" placeholder="Customer name">
+          </div>
+          <div class="col-md-3 d-flex align-items-end">
+            <button class="btn btn-outline-primary w-100" id="exportCSV"><i class="fas fa-file-csv"></i> Export CSV</button>
+          </div>
+        </div>
+        <div class="table-responsive">
+          <table class="table table-hover align-middle">
+            <thead class="table-light">
+              <tr>
+                <th>Date</th>
+                <th>Product</th>
+                <th>Customer</th>
+                <th>Quantity</th>
+                <th>Total</th>
+                <th>Payment</th>
+                <th>Staff</th>
+                <th>Status</th>
+                <th>Actions</th>
+              </tr>
+            </thead>
+            <tbody id="salesRecordsTableBody">
+              <tr>
+                <td colspan="9" class="text-center text-muted">No sales records found.</td>
+              </tr>
+            </tbody>
+          </table>
+        </div>
+      </div>
+    </div>
+    <div id="customers" class="section">
+      <h3><i class="fas fa-users me-2"></i>Customer Management</h3>
+      <div class="card p-3 mb-3">
+        <div class="d-flex justify-content-between align-items-center mb-2">
+          <input type="text" class="form-control w-50" id="searchCustomer" placeholder="Search customers...">
+          <button class="btn btn-primary ms-2" data-bs-toggle="modal" data-bs-target="#addCustomerModal"><i class="fas fa-plus"></i> Add Customer</button>
+        </div>
+        <div class="table-responsive">
+          <table class="table table-hover align-middle">
+            <thead class="table-light">
+              <tr>
+                <th>Name</th>
+                <th>Contact</th>
+                <th>Total Purchases</th>
+                <th>Last Purchase</th>
+                <th>Actions</th>
+              </tr>
+            </thead>
+            <tbody id="customerTableBody">
+              <tr>
+                <td colspan="5" class="text-center text-muted">No customers found.</td>
+              </tr>
+            </tbody>
+          </table>
+        </div>
+      </div>
+    </div>
+    <div id="reports" class="section">
+      <h3><i class="fas fa-chart-line me-2"></i>Reports & Analytics</h3>
+      <div class="row mb-4">
+        <div class="col-md-3">
+          <div class="card text-center p-3 mb-2">
+            <h6 class="text-muted">Total Sales</h6>
+            <h3 id="reportTotalSales">0</h3>
+          </div>
+        </div>
+        <div class="col-md-3">
+          <div class="card text-center p-3 mb-2">
+            <h6 class="text-muted">Total Revenue</h6>
+            <h3 id="reportTotalRevenue">₵0.00</h3>
+          </div>
+        </div>
+        <div class="col-md-3">
+          <div class="card text-center p-3 mb-2">
+            <h6 class="text-muted">Top Product</h6>
+            <h3 id="reportTopProduct">-</h3>
+          </div>
+        </div>
+        <div class="col-md-3 d-flex align-items-center justify-content-center">
+          <button class="btn btn-outline-primary w-100" id="exportReport"><i class="fas fa-file-export"></i> Export Report</button>
+        </div>
+      </div>
+      <div class="card p-4 mb-4">
+        <h5 class="mb-3"><i class="fas fa-chart-area me-2"></i>Sales Trends</h5>
+        <div id="salesTrendsChart" style="height: 300px; background: #f8f9fa; display: flex; align-items: center; justify-content: center; color: #bbb;">
+          (Sales trends chart will appear here.)
+        </div>
+      </div>
+      <div class="card p-4">
+        <h5 class="mb-3"><i class="fas fa-star me-2"></i>Top Products</h5>
+        <div class="table-responsive">
+          <table class="table table-hover align-middle">
+            <thead class="table-light">
+              <tr>
+                <th>Product</th>
+                <th>Units Sold</th>
+                <th>Total Revenue (₵)</th>
+              </tr>
+            </thead>
+            <tbody id="topProductsTableBody">
+              <tr>
+                <td colspan="3" class="text-center text-muted">No data available.</td>
+              </tr>
+            </tbody>
+          </table>
+        </div>
+      </div>
+    </div>
+    <div id="profile" class="section">
+      <h3><i class="fas fa-user me-2"></i>Profile</h3>
+      <div class="card p-4 mb-4" style="max-width: 600px;">
+        <div class="mb-3">
+          <label class="form-label">Name</label>
+          <input type="text" class="form-control" id="profileName" value="John Doe" readonly>
+        </div>
+        <div class="mb-3">
+          <label class="form-label">Email</label>
+          <input type="email" class="form-control" id="profileEmail" value="sales@example.com" readonly>
+        </div>
+        <div class="mb-3">
+          <label class="form-label">Role</label>
+          <input type="text" class="form-control" id="profileRole" value="Sales" readonly>
+        </div>
+        <div class="mb-3">
+          <label class="form-label">Last Login</label>
+          <input type="text" class="form-control" id="profileLastLogin" value="-" readonly>
+        </div>
+        <div class="d-flex gap-2">
+          <button class="btn btn-primary" data-bs-toggle="modal" data-bs-target="#editProfileModal"><i class="fas fa-edit"></i> Edit Profile</button>
+          <button class="btn btn-outline-secondary" data-bs-toggle="modal" data-bs-target="#changePasswordModal"><i class="fas fa-key"></i> Change Password</button>
+        </div>
+      </div>
+      <div class="card p-4">
+        <h5 class="mb-3"><i class="fas fa-history me-2"></i>Audit Log</h5>
+        <div class="table-responsive">
+          <table class="table table-hover align-middle">
+            <thead class="table-light">
+              <tr>
+                <th>Date</th>
+                <th>Action</th>
+                <th>Details</th>
+              </tr>
+            </thead>
+            <tbody id="auditLogTableBody">
+              <tr>
+                <td colspan="3" class="text-center text-muted">No audit log entries.</td>
+              </tr>
+            </tbody>
+          </table>
+        </div>
+      </div>
+    </div>
+    <!-- Edit Profile Modal -->
+    <div class="modal fade" id="editProfileModal" tabindex="-1" aria-labelledby="editProfileModalLabel" aria-hidden="true">
+      <div class="modal-dialog">
+        <div class="modal-content">
+          <form id="editProfileForm">
+            <div class="modal-header">
+              <h5 class="modal-title" id="editProfileModalLabel">Edit Profile</h5>
+              <button type="button" class="btn-close" data-bs-dismiss="modal" aria-label="Close"></button>
+            </div>
+            <div class="modal-body">
+              <div class="mb-3">
+                <label for="editProfileName" class="form-label">Name</label>
+                <input type="text" class="form-control" id="editProfileName" required>
+              </div>
+              <div class="mb-3">
+                <label for="editProfileEmail" class="form-label">Email</label>
+                <input type="email" class="form-control" id="editProfileEmail" required>
+              </div>
+            </div>
+            <div class="modal-footer">
+              <button type="button" class="btn btn-secondary" data-bs-dismiss="modal">Cancel</button>
+              <button type="submit" class="btn btn-primary">Save Changes</button>
+            </div>
+          </form>
+        </div>
+      </div>
+    </div>
+    <!-- Change Password Modal -->
+    <div class="modal fade" id="changePasswordModal" tabindex="-1" aria-labelledby="changePasswordModalLabel" aria-hidden="true">
+      <div class="modal-dialog">
+        <div class="modal-content">
+          <form id="changePasswordForm">
+            <div class="modal-header">
+              <h5 class="modal-title" id="changePasswordModalLabel">Change Password</h5>
+              <button type="button" class="btn-close" data-bs-dismiss="modal" aria-label="Close"></button>
+            </div>
+            <div class="modal-body">
+              <div class="mb-3">
+                <label for="currentPassword" class="form-label">Current Password</label>
+                <input type="password" class="form-control" id="currentPassword" required>
+              </div>
+              <div class="mb-3">
+                <label for="newPassword" class="form-label">New Password</label>
+                <input type="password" class="form-control" id="newPassword" required>
+              </div>
+              <div class="mb-3">
+                <label for="confirmNewPassword" class="form-label">Confirm New Password</label>
+                <input type="password" class="form-control" id="confirmNewPassword" required>
+              </div>
+            </div>
+            <div class="modal-footer">
+              <button type="button" class="btn btn-secondary" data-bs-dismiss="modal">Cancel</button>
+              <button type="submit" class="btn btn-primary">Change Password</button>
+            </div>
+          </form>
+        </div>
+      </div>
+    </div>
+    <div id="notifications" class="section">
+      <h3><i class="fas fa-bell me-2"></i>Notifications</h3>
+      <div class="card p-4 mb-3">
+        <ul class="list-group" id="notificationList">
+          <li class="list-group-item d-flex justify-content-between align-items-center">
+            <span>No notifications.</span>
+          </li>
+        </ul>
+      </div>
+      <button class="btn btn-outline-secondary" id="clearNotifications"><i class="fas fa-trash"></i> Clear All</button>
+    </div>
+  </div>
+  <footer class="text-center py-3 bg-light mt-4 shadow-sm" style="margin-left:220px;">
     <p class="mb-0">&copy; 2025 Alisay Medical Center</p>
   </footer>
   <script src="https://cdn.jsdelivr.net/npm/bootstrap@5.3.2/dist/js/bootstrap.bundle.min.js"></script>
@@ -248,97 +570,125 @@
   <script src="https://www.gstatic.com/firebasejs/9.22.2/firebase-app-compat.js"></script>
   <script src="https://www.gstatic.com/firebasejs/9.22.2/firebase-auth-compat.js"></script>
   <script src="https://www.gstatic.com/firebasejs/9.22.2/firebase-firestore-compat.js"></script>
-  <!-- Your JS files -->
+  <script>
+    const firebaseConfig = {
+      apiKey: "YOUR_API_KEY",
+      authDomain: "YOUR_AUTH_DOMAIN",
+      projectId: "YOUR_PROJECT_ID",
+      storageBucket: "YOUR_STORAGE_BUCKET",
+      messagingSenderId: "YOUR_MESSAGING_SENDER_ID",
+      appId: "YOUR_APP_ID"
+    };
+    firebase.initializeApp(firebaseConfig);
+  </script>
+
+  <!-- Your custom scripts that use firebase.auth() or firebase.firestore() -->
   <script src="assets/js/main.js"></script>
   <script src="assets/js/auth.js"></script>
   <script>
+    function showSection(sectionId) {
+      document.querySelectorAll('.section').forEach(sec => sec.classList.remove('active'));
+      document.getElementById(sectionId).classList.add('active');
+      document.querySelectorAll('.sidebar .nav-link').forEach(link => link.classList.remove('active'));
+      const navLinks = document.querySelectorAll('.sidebar .nav-link');
+      navLinks.forEach(link => {
+        if (link.getAttribute('onclick').includes(sectionId)) {
+          link.classList.add('active');
+        }
+      });
+    }
     function logout() {
       firebase.auth().signOut().then(() => {
         window.location.href = 'login.html';
       });
     }
-    // Patient profile click (customize as needed)
-    document.getElementById('patient-profile-link').onclick = function() {
-      window.location.href = 'patient-profile.html';
+    // Dark mode toggle
+    document.getElementById('darkModeToggle').onclick = function() {
+      document.body.classList.toggle('dark-mode');
     };
-    // Mobile sidebar toggle logic
-    const sidebarMobile = document.getElementById('sidebarMobile');
-    const sidebarMobileOverlay = document.getElementById('sidebarMobileOverlay');
-    const sidebarToggleBtn = document.getElementById('sidebarToggleBtn');
-    function toggleSidebarMobile() {
-      if (sidebarMobile.classList.contains('show')) {
-        sidebarMobile.classList.remove('show');
-        sidebarMobileOverlay.classList.remove('active');
-      } else {
-        sidebarMobile.classList.add('show');
-        sidebarMobileOverlay.classList.add('active');
-      }
+  </script>
+  <script>
+    // Your Firebase config should already be initialized above this script
+
+    const db = firebase.firestore();
+
+    // Load products and display in table
+    function loadProducts() {
+      const tbody = document.getElementById('productTableBody');
+      tbody.innerHTML = '<tr><td colspan="6" class="text-center text-muted">Loading...</td></tr>';
+      db.collection('products').orderBy('name').onSnapshot(snapshot => {
+        tbody.innerHTML = '';
+        if (snapshot.empty) {
+          tbody.innerHTML = '<tr><td colspan="6" class="text-center text-muted">No products yet.</td></tr>';
+          return;
+        }
+        snapshot.forEach(doc => {
+          const p = doc.data();
+          const row = document.createElement('tr');
+          row.innerHTML = `
+            <td>${p.name}</td>
+            <td>${p.category}</td>
+            <td>${p.stock}</td>
+            <td>₵${parseFloat(p.price).toFixed(2)}</td>
+            <td>${p.status}</td>
+            <td>
+              <button class="btn btn-sm btn-outline-primary" data-id="${doc.id}" onclick="editProduct('${doc.id}')"><i class="fas fa-edit"></i></button>
+              <button class="btn btn-sm btn-outline-danger" data-id="${doc.id}" onclick="deleteProduct('${doc.id}')"><i class="fas fa-trash"></i></button>
+            </td>
+          `;
+          tbody.appendChild(row);
+        });
+      });
     }
-    sidebarToggleBtn.addEventListener('click', toggleSidebarMobile);
-    sidebarMobileOverlay.addEventListener('click', toggleSidebarMobile);
-    // Close sidebar when a link is clicked (on mobile)
-    sidebarMobile.querySelectorAll('a.nav-link').forEach(link => {
-      link.addEventListener('click', () => {
-        sidebarMobile.classList.remove('show');
-        sidebarMobileOverlay.classList.remove('active');
+
+    // Add product
+    document.getElementById('addProductForm').addEventListener('submit', function(e) {
+      e.preventDefault();
+      const name = document.getElementById('productName').value.trim();
+      const category = document.getElementById('productCategory').value.trim();
+      const stock = parseInt(document.getElementById('productStock').value, 10);
+      const price = parseFloat(document.getElementById('productPrice').value);
+      const status = document.getElementById('productStatus').value;
+      db.collection('products').add({
+        name, category, stock, price, status
+      }).then(() => {
+        // Close modal and reset form
+        document.getElementById('addProductForm').reset();
+        bootstrap.Modal.getInstance(document.getElementById('addProductModal')).hide();
+        showToast('Product added successfully!');
+      }).catch(err => {
+        showToast('Error adding product: ' + err.message, true);
       });
     });
-    // Dashboard summary and recent activity logic
-    let currentUser = null;
-    firebase.auth().onAuthStateChanged(function(user) {
-      if (user) {
-        currentUser = user;
-        document.getElementById('welcome-name').textContent = `Welcome, ${user.displayName || 'Patient'}!`;
-        loadDashboardData();
+
+    // Show toast
+    function showToast(message, isError = false) {
+      let toast = document.getElementById('customToast');
+      if (!toast) {
+        toast = document.createElement('div');
+        toast.id = 'customToast';
+        toast.className = 'toast align-items-center text-white ' + (isError ? 'bg-danger' : 'bg-success');
+        toast.style.position = 'fixed';
+        toast.style.bottom = '20px';
+        toast.style.right = '20px';
+        toast.style.zIndex = 9999;
+        toast.innerHTML = `
+          <div class="d-flex">
+            <div class="toast-body">${message}</div>
+            <button type="button" class="btn-close btn-close-white me-2 m-auto" data-bs-dismiss="toast"></button>
+          </div>
+        `;
+        document.body.appendChild(toast);
       } else {
-        window.location.href = 'login.html';
+        toast.querySelector('.toast-body').textContent = message;
+        toast.className = 'toast align-items-center text-white ' + (isError ? 'bg-danger' : 'bg-success');
       }
-    });
-    function loadDashboardData() {
-      // Appointments count (upcoming only)
-      firebase.firestore().collection('appointments')
-        .where('userId', '==', currentUser.uid)
-        .where('date', '>=', new Date())
-        .get().then(snapshot => {
-          document.getElementById('card-appointments').textContent = snapshot.size;
-          window._recentAppointments = snapshot.docs.map(doc => ({...doc.data(), id: doc.id}));
-          loadRecentActivity();
-        });
-      // Prescriptions count
-      firebase.firestore().collection('prescriptions')
-        .where('userId', '==', currentUser.uid)
-        .get().then(snapshot => {
-          document.getElementById('card-prescriptions').textContent = snapshot.size;
-          window._recentPrescriptions = snapshot.docs.map(doc => ({...doc.data(), id: doc.id}));
-          loadRecentActivity();
-        });
-      // Complaints count
-      firebase.firestore().collection('complaints')
-        .where('userId', '==', currentUser.uid)
-        .get().then(snapshot => {
-          document.getElementById('card-complaints').textContent = snapshot.size;
-          window._recentComplaints = snapshot.docs.map(doc => ({...doc.data(), id: doc.id}));
-          loadRecentActivity();
-        });
+      const bsToast = new bootstrap.Toast(toast, { delay: 3000 });
+      bsToast.show();
     }
-    function loadRecentActivity() {
-      // Wait for all three to be loaded
-      if (!window._recentAppointments || !window._recentPrescriptions || !window._recentComplaints) return;
-      const recent = [];
-      if (window._recentAppointments.length) {
-        const appt = window._recentAppointments.sort((a,b) => new Date(b.date) - new Date(a.date))[0];
-        recent.push(`<li class='list-group-item'><i class='fa-solid fa-calendar-check text-primary me-2'></i><strong>Appointment:</strong> ${appt.date ? new Date(appt.date.seconds ? appt.date.toDate() : appt.date).toLocaleString() : ''} with ${appt.doctor || 'Doctor'}</li>`);
-      }
-      if (window._recentPrescriptions.length) {
-        const pres = window._recentPrescriptions.sort((a,b) => new Date(b.date) - new Date(a.date))[0];
-        recent.push(`<li class='list-group-item'><i class='fa-solid fa-file-medical text-success me-2'></i><strong>Prescription:</strong> ${pres.date ? new Date(pres.date.seconds ? pres.date.toDate() : pres.date).toLocaleString() : ''} by ${pres.doctor || 'Doctor'}</li>`);
-      }
-      if (window._recentComplaints.length) {
-        const comp = window._recentComplaints.sort((a,b) => new Date(b.timestamp) - new Date(a.timestamp))[0];
-        recent.push(`<li class='list-group-item'><i class='fa-solid fa-comment-medical text-warning me-2'></i><strong>Complaint:</strong> ${comp.subject} <span class='text-muted'>(${comp.timestamp ? new Date(comp.timestamp.seconds ? comp.timestamp.toDate() : comp.timestamp).toLocaleString() : ''})</span></li>`);
-      }
-      document.getElementById('recent-activity-list').innerHTML = recent.length ? recent.join('') : "<li class='list-group-item text-muted'>No recent activity.</li>";
-    }
+
+    // Initial load
+    loadProducts();
   </script>
 </body>
 </html> 
